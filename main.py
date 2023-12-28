@@ -6,7 +6,7 @@ import pygame
 pygame.init()
 size = width, height = 1000, 600
 screen = pygame.display.set_mode(size)
-FPS = 50
+FPS = 100
 clock = pygame.time.Clock()
 
 
@@ -44,19 +44,32 @@ def load_level_1():
     level = pygame.transform.scale(load_image('level1.png'), size)
     screen.blit(level, (0, 0))
     player = Hero()
+    flLeft = flRight = flup = fldown = False
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_DOWN:
-                    player.rect.y += 10
-                elif event.key == pygame.K_UP:
-                    player.rect.y -= 10
-                elif event.key == pygame.K_LEFT:
-                    player.rect.x -= 10
-                elif event.key == pygame.K_RIGHT:
-                    player.rect.x += 10
+                if event.key == pygame.K_s:
+                    fldown = True
+                elif event.key == pygame.K_w:
+                    flup = True
+                elif event.key == pygame.K_a:
+                    flLeft = True
+                elif event.key == pygame.K_d:
+                    flRight = True
+            elif event.type == pygame.KEYUP:
+                if event.key in [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s]:
+                    flLeft = flRight = flup = fldown = False
+        if flLeft:
+            player.rect.x -= 10
+        elif flRight:
+            player.rect.x += 10
+        if flup:
+            player.rect.y -= 10
+        elif fldown:
+            player.rect.y += 10
+
         screen.blit(level, (0, 0))
         all_sprites.draw(screen)
         all_sprites.update()
@@ -70,19 +83,31 @@ def load_level_2():
     level = pygame.transform.scale(load_image('level2.png'), size)
     screen.blit(level, (0, 0))
     player = Hero()
+    flLeft = flRight = flup = fldown = False
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_DOWN:
-                    player.rect.y += 10
-                elif event.key == pygame.K_UP:
-                    player.rect.y -= 10
-                elif event.key == pygame.K_LEFT:
-                    player.rect.x -= 10
-                elif event.key == pygame.K_RIGHT:
-                    player.rect.x += 10
+                if event.key == pygame.K_s:
+                    fldown = True
+                elif event.key == pygame.K_w:
+                    flup = True
+                elif event.key == pygame.K_a:
+                    flLeft = True
+                elif event.key == pygame.K_d:
+                    flRight = True
+            elif event.type == pygame.KEYUP:
+                if event.key in [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s]:
+                    flLeft = flRight = flup = fldown = False
+        if flLeft:
+            player.rect.x -= 10
+        elif flRight:
+            player.rect.x += 10
+        if flup:
+            player.rect.y -= 10
+        elif fldown:
+                player.rect.y += 10
         screen.blit(level, (0, 0))
         all_sprites.draw(screen)
         all_sprites.update()
@@ -91,24 +116,36 @@ def load_level_2():
 
 
 def load_level_3():
-    pygame.mixer.music.load('data/boss3.ogg')
+    pygame.mixer.music.load('data/boss3.mp3')
     pygame.mixer.music.play()
     level = pygame.transform.scale(load_image('level3.png'), size)
     screen.blit(level, (0, 0))
     player = Hero()
+    flLeft = flRight = flup = fldown = False
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_DOWN:
-                    player.rect.y += 10
-                elif event.key == pygame.K_UP:
-                    player.rect.y -= 10
-                elif event.key == pygame.K_LEFT:
-                    player.rect.x -= 10
-                elif event.key == pygame.K_RIGHT:
-                    player.rect.x += 10
+                if event.key == pygame.K_s:
+                    fldown = True
+                elif event.key == pygame.K_w:
+                    flup = True
+                elif event.key == pygame.K_a:
+                    flLeft = True
+                elif event.key == pygame.K_d:
+                    flRight = True
+            elif event.type == pygame.KEYUP:
+                if event.key in [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s]:
+                    flLeft = flRight = flup = fldown = False
+        if flLeft:
+            player.rect.x -= 10
+        elif flRight:
+            player.rect.x += 10
+        if flup:
+            player.rect.y -= 10
+        elif fldown:
+                player.rect.y += 10
         screen.blit(level, (0, 0))
         all_sprites.draw(screen)
         all_sprites.update()
@@ -131,7 +168,6 @@ def start_screen():
             elif event.type == pygame.KEYDOWN or \
                     event.type == pygame.MOUSEBUTTONDOWN:
                 if 350 < pygame.mouse.get_pos()[0] < 650 and 300 < pygame.mouse.get_pos()[1] < 400:
-                    pygame.mixer.music.stop()
                     level_menu_screen()
         pygame.display.flip()
 
@@ -153,10 +189,13 @@ def level_menu_screen():
             elif event.type == pygame.KEYDOWN or \
                     event.type == pygame.MOUSEBUTTONDOWN:
                 if 200 < pygame.mouse.get_pos()[0] < 350 and 250 < pygame.mouse.get_pos()[1] < 400:
+                    pygame.mixer.music.stop()
                     load_level_1()
                 elif 425 < pygame.mouse.get_pos()[0] < 575 and 250 < pygame.mouse.get_pos()[1] < 400:
+                    pygame.mixer.music.stop()
                     load_level_2()
                 elif 650 < pygame.mouse.get_pos()[0] < 800 and 250 < pygame.mouse.get_pos()[1] < 400:
+                    pygame.mixer.music.stop()
                     load_level_3()
         pygame.display.flip()
 
