@@ -10,6 +10,14 @@ FPS = 100
 clock = pygame.time.Clock()
 
 
+def gradientRect(window, left_colour, right_colour, target_rect):
+    colour_rect = pygame.Surface((2, 2))
+    pygame.draw.line(colour_rect, left_colour, (0, 0), (1, 0))
+    pygame.draw.line(colour_rect, right_colour, (0, 1), (1, 1))
+    colour_rect = pygame.transform.smoothscale(colour_rect, (target_rect.width, target_rect.height))
+    window.blit(colour_rect, target_rect)
+
+
 def load_image(name):
     fullname = os.path.join('data', name)
     # если файл не существует, то выходим
@@ -33,6 +41,7 @@ class Hero(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = 50
         self.rect.y = 550
+        self.fly = 50
 
 
 all_sprites = pygame.sprite.Group()
@@ -44,45 +53,47 @@ def load_level_1():
     level = pygame.transform.scale(load_image('level1.png'), size)
     screen.blit(level, (0, 0))
     player = Hero()
-    flLeft = flRight = flup = fldown = False
-    jump = False
-    jumpCount = 0
-    jumpMax = 15
+    flLeft = flRight = flup = False
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_s:
-                    fldown = True
-                elif not jump and event.key == pygame.K_SPACE:
-                    jump = True
-                    jumpCount = jumpMax
-                elif event.key == pygame.K_w:
+                if event.key == pygame.K_SPACE:
                     flup = True
                 elif event.key == pygame.K_a:
                     flLeft = True
                 elif event.key == pygame.K_d:
                     flRight = True
             elif event.type == pygame.KEYUP:
-                if event.key in [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s]:
-                    flLeft = flRight = flup = fldown = False
+                if event.key in [pygame.K_a, pygame.K_d]:
+                    flLeft = flRight = False
+                if event.key == pygame.K_SPACE:
+                    flup = False
         if flLeft:
             player.rect.x -= 10
         elif flRight:
             player.rect.x += 10
-        if flup and not jump:
+        if flup and player.fly > 0:
             player.rect.y -= 10
-        elif fldown:
-            player.rect.y += 10
-        if jump:
-            player.rect.y -= jumpCount
-            if jumpCount > -jumpMax:
-                jumpCount -= 2
+            player.fly -= 1
+        elif flup and player.rect.y < 550 and player.fly == 0:
+            player.rect.y += 5
+        elif not flup and player.rect.y < 550 or player.fly == 0:
+            if player.rect.y + 10 < 550:
+                player.rect.y += 10
             else:
-                jump = False
+                player.rect.y += 550 - player.rect.y
+
+        if player.rect.y == 550:
+            player.fly = 50
 
         screen.blit(level, (0, 0))
+        gradientRect(screen, (141, 175, 254), (173, 103, 255), pygame.Rect(40, 45, 10, 50))
+        pygame.draw.rect(screen, (0, 0, 0), (40, 45, 10, 50 - player.fly))
+        frame = pygame.transform.scale(load_image('frame2.png'), (30, 90))
+        screen.blit(frame, (30, 20))
         all_sprites.draw(screen)
         all_sprites.update()
         clock.tick(15)
@@ -95,47 +106,49 @@ def load_level_2():
     level = pygame.transform.scale(load_image('level2.png'), size)
     screen.blit(level, (0, 0))
     player = Hero()
-    flLeft = flRight = flup = fldown = False
-    jump = False
-    jumpCount = 0
-    jumpMax = 15
+    flLeft = flRight = flup = False
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_s:
-                    fldown = True
-                elif not jump and event.key == pygame.K_SPACE:
-                    jump = True
-                    jumpCount = jumpMax
-                elif event.key == pygame.K_w:
+                if event.key == pygame.K_SPACE:
                     flup = True
                 elif event.key == pygame.K_a:
                     flLeft = True
                 elif event.key == pygame.K_d:
                     flRight = True
             elif event.type == pygame.KEYUP:
-                if event.key in [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s]:
-                    flLeft = flRight = flup = fldown = False
+                if event.key in [pygame.K_a, pygame.K_d]:
+                    flLeft = flRight = False
+                if event.key == pygame.K_SPACE:
+                    flup = False
         if flLeft:
             player.rect.x -= 10
         elif flRight:
             player.rect.x += 10
-        if flup and not jump:
+        if flup and player.fly > 0:
             player.rect.y -= 10
-        elif fldown:
+            player.fly -= 1
+        elif flup and player.rect.y < 550 and player.fly == 0:
+            player.rect.y += 5
+        elif not flup and player.rect.y < 550 or player.fly == 0:
+            if player.rect.y + 10 < 550:
                 player.rect.y += 10
-        if jump:
-            player.rect.y -= jumpCount
-            if jumpCount > -jumpMax:
-                jumpCount -= 2
             else:
-                jump = False
+                player.rect.y += 550 - player.rect.y
+
+        if player.rect.y == 550:
+            player.fly = 50
+
         screen.blit(level, (0, 0))
+        gradientRect(screen, (141, 175, 254), (173, 103, 255), pygame.Rect(40, 45, 10, 50))
+        pygame.draw.rect(screen, (0, 0, 0), (40, 45, 10, 50 - player.fly))
+        frame = pygame.transform.scale(load_image('frame2.png'), (30, 90))
+        screen.blit(frame, (30, 20))
         all_sprites.draw(screen)
         all_sprites.update()
-        clock.tick(10)
+        clock.tick(15)
         pygame.display.flip()
 
 
@@ -145,47 +158,49 @@ def load_level_3():
     level = pygame.transform.scale(load_image('level3.png'), size)
     screen.blit(level, (0, 0))
     player = Hero()
-    flLeft = flRight = flup = fldown = False
-    jump = False
-    jumpCount = 0
-    jumpMax = 15
+    flLeft = flRight = flup = False
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_s:
-                    fldown = True
-                elif not jump and event.key == pygame.K_SPACE:
-                    jump = True
-                    jumpCount = jumpMax
-                elif event.key == pygame.K_w:
+                if event.key == pygame.K_SPACE:
                     flup = True
                 elif event.key == pygame.K_a:
                     flLeft = True
                 elif event.key == pygame.K_d:
                     flRight = True
             elif event.type == pygame.KEYUP:
-                if event.key in [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s]:
-                    flLeft = flRight = flup = fldown = False
+                if event.key in [pygame.K_a, pygame.K_d]:
+                    flLeft = flRight = False
+                if event.key == pygame.K_SPACE:
+                    flup = False
         if flLeft:
             player.rect.x -= 10
         elif flRight:
             player.rect.x += 10
-        if flup and not jump:
+        if flup and player.fly > 0:
             player.rect.y -= 10
-        elif fldown:
+            player.fly -= 1
+        elif flup and player.rect.y < 550 and player.fly == 0:
+            player.rect.y += 5
+        elif not flup and player.rect.y < 550 or player.fly == 0:
+            if player.rect.y + 10 < 550:
                 player.rect.y += 10
-        if jump:
-            player.rect.y -= jumpCount
-            if jumpCount > -jumpMax:
-                jumpCount -= 2
             else:
-                jump = False
+                player.rect.y += 550 - player.rect.y
+
+        if player.rect.y == 550:
+            player.fly = 50
+
         screen.blit(level, (0, 0))
+        gradientRect(screen, (141, 175, 254), (173, 103, 255), pygame.Rect(40, 45, 10, 50))
+        pygame.draw.rect(screen, (0, 0, 0), (40, 45, 10, 50 - player.fly))
+        frame = pygame.transform.scale(load_image('frame2.png'), (30, 90))
+        screen.blit(frame, (30, 20))
         all_sprites.draw(screen)
         all_sprites.update()
-        clock.tick(10)
+        clock.tick(15)
         pygame.display.flip()
 
 
@@ -238,8 +253,6 @@ def level_menu_screen():
 
 start_screen()
 level_menu_screen()
-
-
 
 running = True
 while running:
