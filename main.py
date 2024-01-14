@@ -36,12 +36,24 @@ def terminate():
 class Hero(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__(all_sprites)
-        self.hero_im = load_image("hero.png")
-        self.image = self.hero_im
+        self.fly_animation = []
+        self.fly_animation.append(pygame.transform.scale(load_image('fly1.png'), (107, 64)))
+        self.fly_animation.append(pygame.transform.scale(load_image('fly2.png'), (107, 64)))
+        self.fly_animation.append(pygame.transform.scale(load_image('fly3.png'), (107, 64)))
+        self.current_im = 0
+        self.image = self.fly_animation[int(self.current_im)]
         self.rect = self.image.get_rect()
         self.rect.x = 50
-        self.rect.y = 550
+        self.rect.y = 535
         self.fly = 50
+        self.is_flying = False
+
+    def update(self):
+        if self.is_flying:
+            self.current_im += 0.4
+            if self.current_im >= len(self.fly_animation):
+                self.current_im = 0
+            self.image = self.fly_animation[int(self.current_im)]
 
 
 all_sprites = pygame.sprite.Group()
@@ -61,7 +73,7 @@ def load_level_1():
                 terminate()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    flup = True
+                    flup = player.is_flying = True
                 elif event.key == pygame.K_a:
                     flLeft = True
                 elif event.key == pygame.K_d:
@@ -70,7 +82,7 @@ def load_level_1():
                 if event.key in [pygame.K_a, pygame.K_d]:
                     flLeft = flRight = False
                 if event.key == pygame.K_SPACE:
-                    flup = False
+                    flup = player.is_flying = False
         if flLeft:
             player.rect.x -= 10
         elif flRight:
@@ -78,15 +90,18 @@ def load_level_1():
         if flup and player.fly > 0:
             player.rect.y -= 10
             player.fly -= 1
-        elif flup and player.rect.y < 550 and player.fly == 0:
+        elif flup and player.rect.y < 535 and player.fly == 0:
             player.rect.y += 5
-        elif not flup and player.rect.y < 550 or player.fly == 0:
-            if player.rect.y + 10 < 550:
+        elif not flup and player.rect.y < 535 or player.fly == 0:
+            if player.rect.y + 10 < 535:
                 player.rect.y += 10
             else:
-                player.rect.y += 550 - player.rect.y
+                player.rect.y += 535 - player.rect.y
 
-        if player.rect.y == 550:
+        if player.rect.y == 535:
+            player.is_flying = False
+            player.current_im = 0
+            player.image = player.fly_animation[int(player.current_im)]
             player.fly = 50
 
         screen.blit(level, (0, 0))
