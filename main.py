@@ -18,6 +18,8 @@ def gradientRect(window, left_colour, right_colour, target_rect):
     window.blit(colour_rect, target_rect)
 
 
+
+
 def load_image(name):
     fullname = os.path.join('data', name)
     # если файл не существует, то выходим
@@ -47,11 +49,11 @@ class Hero(pygame.sprite.Sprite):
         self.current_im = 0
         self.image = pygame.transform.scale(load_image('hero.png'), (107, 64))
         self.rect = self.image.get_rect()
-        self.rect.x = 50
         self.rect.y = 535
         self.fly = 50
         self.is_flying = False
         self.left = False
+        self.choice = 0
 
     def update(self):
         if self.left:
@@ -70,7 +72,6 @@ class Hero(pygame.sprite.Sprite):
                 self.image = self.fly_animation[int(self.current_im)]
             else:
                 self.image = pygame.transform.scale(load_image('hero.png'), (107, 64))
-
 
 
 all_sprites = pygame.sprite.Group()
@@ -97,6 +98,10 @@ def load_level_1():
                 elif event.key == pygame.K_d:
                     flRight = True
                     player.left = False
+                elif event.key == pygame.K_e:
+                    player.choice += 1
+                    if player.choice >= 3:
+                        player.choice = 0
             elif event.type == pygame.KEYUP:
                 if event.key in [pygame.K_a, pygame.K_d]:
                     flLeft = flRight = False
@@ -132,9 +137,38 @@ def load_level_1():
         gradientRect(screen, (141, 175, 254), (173, 103, 255), pygame.Rect(40, 45, 10, 50))
         pygame.draw.rect(screen, (0, 0, 0), (40, 45, 10, 50 - player.fly))
         frame = pygame.transform.scale(load_image('frame2.png'), (30, 90))
+        gun = pygame.transform.scale(load_image('the_undertaker.png'), (46, 24))
+        gun_l = pygame.transform.scale(load_image('the_undertaker_l.png'), (46, 24))
+        mgun = pygame.transform.scale(load_image('megashark.png'), (70, 28))
+        mgun_l = pygame.transform.scale(load_image('megashark_l.png'), (70, 28))
+
         screen.blit(frame, (30, 20))
+
         all_sprites.draw(screen)
         all_sprites.update()
+        if player.choice == 1:
+            if player.is_flying:
+                if player.left:
+                        screen.blit(gun_l, (player.rect.x - 30, player.rect.y + 25))
+                else:
+                    screen.blit(gun, (player.rect.x + 95, player.rect.y + 25))
+            else:
+                if player.left:
+                    screen.blit(gun_l, (player.rect.x, player.rect.y + 30))
+                else:
+                    screen.blit(gun, (player.rect.x + 60, player.rect.y + 30))
+        if player.choice == 2:
+            if player.is_flying:
+                if player.left:
+                    screen.blit(mgun_l, (player.rect.x - 53, player.rect.y + 21))
+                else:
+                    screen.blit(mgun, (player.rect.x + 90, player.rect.y + 21))
+            else:
+                if player.left:
+                    screen.blit(mgun_l, (player.rect.x - 20, player.rect.y + 26))
+                else:
+                    screen.blit(mgun, (player.rect.x + 55, player.rect.y + 26))
+
         clock.tick(15)
         pygame.display.flip()
 
