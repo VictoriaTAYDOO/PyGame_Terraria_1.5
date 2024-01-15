@@ -37,23 +37,40 @@ class Hero(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__(all_sprites)
         self.fly_animation = []
+        self.fly_animation_l = []
         self.fly_animation.append(pygame.transform.scale(load_image('fly1.png'), (107, 64)))
         self.fly_animation.append(pygame.transform.scale(load_image('fly2.png'), (107, 64)))
         self.fly_animation.append(pygame.transform.scale(load_image('fly3.png'), (107, 64)))
+        self.fly_animation_l.append(pygame.transform.scale(load_image('fly1_l.png'), (107, 64)))
+        self.fly_animation_l.append(pygame.transform.scale(load_image('fly2_l.png'), (107, 64)))
+        self.fly_animation_l.append(pygame.transform.scale(load_image('fly3_l.png'), (107, 64)))
         self.current_im = 0
-        self.image = self.fly_animation[int(self.current_im)]
+        self.image = pygame.transform.scale(load_image('hero.png'), (107, 64))
         self.rect = self.image.get_rect()
         self.rect.x = 50
         self.rect.y = 535
         self.fly = 50
         self.is_flying = False
+        self.left = False
 
     def update(self):
-        if self.is_flying:
-            self.current_im += 0.4
-            if self.current_im >= len(self.fly_animation):
-                self.current_im = 0
-            self.image = self.fly_animation[int(self.current_im)]
+        if self.left:
+            if self.is_flying:
+                self.current_im += 0.6
+                if self.current_im >= len(self.fly_animation_l):
+                    self.current_im = 0
+                self.image = self.fly_animation_l[int(self.current_im)]
+            else:
+                self.image = pygame.transform.scale(load_image('hero_l.png'), (107, 64))
+        else:
+            if self.is_flying:
+                self.current_im += 0.6
+                if self.current_im >= len(self.fly_animation):
+                    self.current_im = 0
+                self.image = self.fly_animation[int(self.current_im)]
+            else:
+                self.image = pygame.transform.scale(load_image('hero.png'), (107, 64))
+
 
 
 all_sprites = pygame.sprite.Group()
@@ -76,13 +93,15 @@ def load_level_1():
                     flup = player.is_flying = True
                 elif event.key == pygame.K_a:
                     flLeft = True
+                    player.left = True
                 elif event.key == pygame.K_d:
                     flRight = True
+                    player.left = False
             elif event.type == pygame.KEYUP:
                 if event.key in [pygame.K_a, pygame.K_d]:
                     flLeft = flRight = False
                 if event.key == pygame.K_SPACE:
-                    flup = player.is_flying = False
+                    flup = False
         if flLeft:
             player.rect.x -= 10
         elif flRight:
@@ -101,8 +120,13 @@ def load_level_1():
         if player.rect.y == 535:
             player.is_flying = False
             player.current_im = 0
-            player.image = player.fly_animation[int(player.current_im)]
+            if player.left:
+                player.image = pygame.transform.scale(load_image('hero_l.png'), (107, 64))
+            else:
+                player.image = pygame.transform.scale(load_image('hero.png'), (107, 64))
             player.fly = 50
+        else:
+            player.is_flying = True
 
         screen.blit(level, (0, 0))
         gradientRect(screen, (141, 175, 254), (173, 103, 255), pygame.Rect(40, 45, 10, 50))
