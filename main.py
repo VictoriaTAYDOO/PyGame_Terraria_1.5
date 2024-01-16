@@ -74,14 +74,14 @@ class Hero(pygame.sprite.Sprite):
         super().__init__(all_sprites)
         self.fly_animation = []
         self.fly_animation_l = []
-        self.fly_animation.append(pygame.transform.scale(load_image('fly1.png'), (107, 64)))
-        self.fly_animation.append(pygame.transform.scale(load_image('fly2.png'), (107, 64)))
-        self.fly_animation.append(pygame.transform.scale(load_image('fly3.png'), (107, 64)))
-        self.fly_animation_l.append(pygame.transform.scale(load_image('fly1_l.png'), (107, 64)))
-        self.fly_animation_l.append(pygame.transform.scale(load_image('fly2_l.png'), (107, 64)))
-        self.fly_animation_l.append(pygame.transform.scale(load_image('fly3_l.png'), (107, 64)))
+        self.fly_animation.append(pygame.transform.scale(load_image('fly1.png'), (173, 64)))
+        self.fly_animation.append(pygame.transform.scale(load_image('fly2.png'), (173, 64)))
+        self.fly_animation.append(pygame.transform.scale(load_image('fly3.png'), (173, 64)))
+        self.fly_animation_l.append(pygame.transform.scale(load_image('fly1_l.png'), (173, 64)))
+        self.fly_animation_l.append(pygame.transform.scale(load_image('fly2_l.png'), (173, 64)))
+        self.fly_animation_l.append(pygame.transform.scale(load_image('fly3_l.png'), (173, 64)))
         self.current_im = 0
-        self.image = pygame.transform.scale(load_image('hero.png'), (107, 64))
+        self.image = pygame.transform.scale(load_image('hero.png'), (173, 64))
         self.rect = self.image.get_rect()
         self.rect.y = 535
         self.fly = 50
@@ -97,7 +97,7 @@ class Hero(pygame.sprite.Sprite):
                     self.current_im = 0
                 self.image = self.fly_animation_l[int(self.current_im)]
             else:
-                self.image = pygame.transform.scale(load_image('hero_l.png'), (107, 64))
+                self.image = pygame.transform.scale(load_image('hero_l.png'), (173, 64))
         else:
             if self.is_flying:
                 self.current_im += 0.6
@@ -105,7 +105,7 @@ class Hero(pygame.sprite.Sprite):
                     self.current_im = 0
                 self.image = self.fly_animation[int(self.current_im)]
             else:
-                self.image = pygame.transform.scale(load_image('hero.png'), (107, 64))
+                self.image = pygame.transform.scale(load_image('hero.png'), (173, 64))
 
 
 all_sprites = pygame.sprite.Group()
@@ -163,9 +163,9 @@ def load_level_1():
             player.is_flying = False
             player.current_im = 0
             if player.left:
-                player.image = pygame.transform.scale(load_image('hero_l.png'), (107, 64))
+                player.image = pygame.transform.scale(load_image('hero_l.png'), (173, 64))
             else:
-                player.image = pygame.transform.scale(load_image('hero.png'), (107, 64))
+                player.image = pygame.transform.scale(load_image('hero.png'), (173, 64))
             player.fly = 50
         else:
             player.is_flying = True
@@ -188,7 +188,7 @@ def load_level_1():
         if player.choice == 1:
             if player.is_flying:
                 if player.left:
-                    pivot = [player.rect.x + 5, player.rect.y + 40]
+                    pivot = [player.rect.x + 70, player.rect.y + 40]
                     offset = pygame.math.Vector2(-20, -10)
                     mouse_x, mouse_y = pygame.mouse.get_pos()
                     if mouse_x <= pivot[0]:
@@ -204,7 +204,7 @@ def load_level_1():
                                             angle, 20)
                             shoot = False
                     else:
-                        screen.blit(gun_l, (player.rect.x - 35, player.rect.y + 20))
+                        screen.blit(gun_l, (player.rect.x + 25, player.rect.y + 20))
                         if shoot:
                             shoot = False
                 else:
@@ -228,7 +228,7 @@ def load_level_1():
                             shoot = False
             else:
                 if player.left:
-                    pivot = [player.rect.x + 40, player.rect.y + 45]
+                    pivot = [player.rect.x + 70, player.rect.y + 45]
                     offset = pygame.math.Vector2(-20, -10)
                     mouse_x, mouse_y = pygame.mouse.get_pos()
                     if mouse_x <= pivot[0]:
@@ -244,11 +244,11 @@ def load_level_1():
                                             angle, 20)
                             shoot = False
                     else:
-                        screen.blit(gun_l, (player.rect.x - 5, player.rect.y + 25))
+                        screen.blit(gun_l, (player.rect.x + 27, player.rect.y + 25))
                         if shoot:
                             shoot = False
                 else:
-                    pivot = [player.rect.x + 75, player.rect.y + 45]
+                    pivot = [player.rect.x + 105, player.rect.y + 45]
                     offset = pygame.math.Vector2(15, -10)
                     mouse_x, mouse_y = pygame.mouse.get_pos()
                     if mouse_x >= pivot[0]:
@@ -263,7 +263,7 @@ def load_level_1():
                                                             int(pivot[1] + offset.rotate(angle)[1] * 3.7)), angle, 20)
                             shoot = False
                     else:
-                        screen.blit(gun, (player.rect.x + 65, player.rect.y + 25))
+                        screen.blit(gun, (player.rect.x + 100, player.rect.y + 25))
                         if shoot:
                             shoot = False
 
