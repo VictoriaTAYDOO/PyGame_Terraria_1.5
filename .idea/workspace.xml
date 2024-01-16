@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="6da59c1f-f36a-465b-80dd-521b9078a118" name="Changes" comment="guns rotation commit">
+    <list default="true" id="6da59c1f-f36a-465b-80dd-521b9078a118" name="Changes" comment="guns rotation commit 2">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -135,7 +135,14 @@
       <option name="project" value="LOCAL" />
       <updated>1705400566503</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="guns rotation commit 2">
+      <created>1705412850832</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1705412850832</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -176,6 +183,7 @@
     <MESSAGE value="fly animation commit 2" />
     <MESSAGE value="guns choice commit" />
     <MESSAGE value="guns rotation commit" />
-    <option name="LAST_COMMIT_MESSAGE" value="guns rotation commit" />
+    <MESSAGE value="guns rotation commit 2" />
+    <option name="LAST_COMMIT_MESSAGE" value="guns rotation commit 2" />
   </component>
 </project>
