@@ -2,6 +2,7 @@ import os
 import sys
 
 import pygame
+import math
 
 pygame.init()
 size = width, height = 1000, 600
@@ -18,8 +19,6 @@ def gradientRect(window, left_colour, right_colour, target_rect):
     window.blit(colour_rect, target_rect)
 
 
-
-
 def load_image(name):
     fullname = os.path.join('data', name)
     # если файл не существует, то выходим
@@ -28,6 +27,22 @@ def load_image(name):
         sys.exit()
     image = pygame.image.load(fullname)
     return image
+
+
+def rotate(surface, angle, pivot, offset):
+    """Rotate the surface around the pivot point.
+
+    Args:
+        surface (pygame.Surface): The surface that is to be rotated.
+        angle (float): Rotate by this angle.
+        pivot (tuple, list, pygame.math.Vector2): The pivot point.
+        offset (pygame.math.Vector2): This vector is added to the pivot.
+    """
+    rotated_image = pygame.transform.rotozoom(surface, -angle, 1)  # Rotate the image.
+    rotated_offset = offset.rotate(angle)  # Rotate the offset vector.
+    # Add the offset vector to the center/pivot point to shift the rect.
+    rect = rotated_image.get_rect(center=pivot + rotated_offset)
+    return rotated_image, rect  # Return the rotated image and shifted rect.
 
 
 def terminate():
@@ -146,17 +161,55 @@ def load_level_1():
 
         all_sprites.draw(screen)
         all_sprites.update()
+
         if player.choice == 1:
             if player.is_flying:
                 if player.left:
-                        screen.blit(gun_l, (player.rect.x - 30, player.rect.y + 25))
+                    pivot = [player.rect.x + 5, player.rect.y + 40]
+                    offset = pygame.math.Vector2(-20, -10)
+                    mouse_x, mouse_y = pygame.mouse.get_pos()
+                    if mouse_x <= pivot[0]:
+                        rel_x, rel_y = mouse_x - pivot[0], mouse_y - pivot[1]
+                        angle = -int((180 / math.pi) * -math.atan2(rel_y, rel_x))
+                        rotated_image, rect = rotate(gun_l, angle + 180, pivot, offset)
+                        screen.blit(rotated_image, rect)
+                    else:
+                        screen.blit(gun_l, (player.rect.x - 35, player.rect.y + 20))
                 else:
-                    screen.blit(gun, (player.rect.x + 95, player.rect.y + 25))
+                    pivot = [player.rect.x + 105, player.rect.y + 40]
+                    offset = pygame.math.Vector2(15, -10)
+                    mouse_x, mouse_y = pygame.mouse.get_pos()
+                    if mouse_x >= pivot[0]:
+                        rel_x, rel_y = mouse_x - pivot[0], mouse_y - pivot[1]
+                        angle = -int((180 / math.pi) * -math.atan2(rel_y, rel_x))
+                        rotated_image, rect = rotate(gun, angle, pivot, offset)
+                        screen.blit(rotated_image, rect)
+                    else:
+                        screen.blit(gun, (player.rect.x + 100, player.rect.y + 20))
             else:
                 if player.left:
-                    screen.blit(gun_l, (player.rect.x, player.rect.y + 30))
+                    pivot = [player.rect.x + 40, player.rect.y + 45]
+                    offset = pygame.math.Vector2(-20, -10)
+                    mouse_x, mouse_y = pygame.mouse.get_pos()
+                    if mouse_x <= pivot[0]:
+                        rel_x, rel_y = mouse_x - pivot[0], mouse_y - pivot[1]
+                        angle = -int((180 / math.pi) * -math.atan2(rel_y, rel_x))
+                        rotated_image, rect = rotate(gun_l, angle + 180, pivot, offset)
+                        screen.blit(rotated_image, rect)
+                    else:
+                        screen.blit(gun_l, (player.rect.x - 5, player.rect.y + 25))
                 else:
-                    screen.blit(gun, (player.rect.x + 60, player.rect.y + 30))
+                    pivot = [player.rect.x + 75, player.rect.y + 45]
+                    offset = pygame.math.Vector2(15, -10)
+                    mouse_x, mouse_y = pygame.mouse.get_pos()
+                    if mouse_x >= pivot[0]:
+                        rel_x, rel_y = mouse_x - pivot[0], mouse_y - pivot[1]
+                        angle = -int((180 / math.pi) * -math.atan2(rel_y, rel_x))
+                        rotated_image, rect = rotate(gun, angle, pivot, offset)
+                        screen.blit(rotated_image, rect)
+                    else:
+                        screen.blit(gun, (player.rect.x + 65, player.rect.y + 25))
+
         if player.choice == 2:
             if player.is_flying:
                 if player.left:
