@@ -91,14 +91,14 @@ class Hero(pygame.sprite.Sprite):
         super().__init__(all_sprites)
         self.fly_animation = []
         self.fly_animation_l = []
-        self.fly_animation.append(pygame.transform.scale(load_image('fly1.png'), (173, 64)))
-        self.fly_animation.append(pygame.transform.scale(load_image('fly2.png'), (173, 64)))
-        self.fly_animation.append(pygame.transform.scale(load_image('fly3.png'), (173, 64)))
-        self.fly_animation_l.append(pygame.transform.scale(load_image('fly1_l.png'), (173, 64)))
-        self.fly_animation_l.append(pygame.transform.scale(load_image('fly2_l.png'), (173, 64)))
-        self.fly_animation_l.append(pygame.transform.scale(load_image('fly3_l.png'), (173, 64)))
+        self.fly_animation.append(pygame.transform.scale(load_image('fly/fly1.png'), (173, 64)))
+        self.fly_animation.append(pygame.transform.scale(load_image('fly/fly2.png'), (173, 64)))
+        self.fly_animation.append(pygame.transform.scale(load_image('fly/fly3.png'), (173, 64)))
+        self.fly_animation_l.append(pygame.transform.scale(load_image('fly/fly1_l.png'), (173, 64)))
+        self.fly_animation_l.append(pygame.transform.scale(load_image('fly/fly2_l.png'), (173, 64)))
+        self.fly_animation_l.append(pygame.transform.scale(load_image('fly/fly3_l.png'), (173, 64)))
         self.current_im = 0
-        self.image = pygame.transform.scale(load_image('hero.png'), (173, 64))
+        self.image = pygame.transform.scale(load_image('fly/hero.png'), (173, 64))
         self.rect = self.image.get_rect()
         self.rect.y = 635
         self.fly = 50
@@ -116,7 +116,7 @@ class Hero(pygame.sprite.Sprite):
                     self.current_im = 0
                 self.image = self.fly_animation_l[int(self.current_im)]
             else:
-                self.image = pygame.transform.scale(load_image('hero_l.png'), (173, 64))
+                self.image = pygame.transform.scale(load_image('fly/hero_l.png'), (173, 64))
         else:
             if self.is_flying:
                 self.current_im += 0.6
@@ -124,7 +124,7 @@ class Hero(pygame.sprite.Sprite):
                     self.current_im = 0
                 self.image = self.fly_animation[int(self.current_im)]
             else:
-                self.image = pygame.transform.scale(load_image('hero.png'), (173, 64))
+                self.image = pygame.transform.scale(load_image('fly/hero.png'), (173, 64))
 
 
 class Foe(pygame.sprite.Sprite):
@@ -135,9 +135,9 @@ class Foe(pygame.sprite.Sprite):
         self.animation.append(pygame.transform.scale(load_image('eoc_anim/eoc1_1.png'), (150, 166)))
         self.animation.append(pygame.transform.scale(load_image('eoc_anim/eoc1_2.png'), (150, 166)))
         self.animation.append(pygame.transform.scale(load_image('eoc_anim/eoc1_3.png'), (150, 166)))
-        self.attack_animation.append(pygame.transform.scale(load_image('fly1_l.png'), (173, 64)))
-        self.attack_animation.append(pygame.transform.scale(load_image('fly2_l.png'), (173, 64)))
-        self.attack_animation.append(pygame.transform.scale(load_image('fly3_l.png'), (173, 64)))
+        self.attack_animation.append(pygame.transform.scale(load_image('fly/fly1_l.png'), (173, 64)))
+        self.attack_animation.append(pygame.transform.scale(load_image('fly/fly2_l.png'), (173, 64)))
+        self.attack_animation.append(pygame.transform.scale(load_image('fly/fly3_l.png'), (173, 64)))
         self.current_im = 0
         self.image = pygame.transform.scale(load_image('eoc_anim/eoc1_1.png'), (150, 166))
         self.rect = self.image.get_rect()
@@ -216,9 +216,9 @@ def load_level_1():
             player.is_flying = False
             player.current_im = 0
             if player.left:
-                player.image = pygame.transform.scale(load_image('hero_l.png'), (173, 64))
+                player.image = pygame.transform.scale(load_image('fly/hero_l.png'), (173, 64))
             else:
-                player.image = pygame.transform.scale(load_image('hero.png'), (173, 64))
+                player.image = pygame.transform.scale(load_image('fly/hero.png'), (173, 64))
             player.fly = 50
         else:
             player.is_flying = True
