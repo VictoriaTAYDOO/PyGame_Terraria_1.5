@@ -91,14 +91,14 @@ class Hero(pygame.sprite.Sprite):
         super().__init__(all_sprites)
         self.fly_animation = []
         self.fly_animation_l = []
-        self.fly_animation.append(pygame.transform.scale(load_image('fly1.png'), (173, 64)))
-        self.fly_animation.append(pygame.transform.scale(load_image('fly2.png'), (173, 64)))
-        self.fly_animation.append(pygame.transform.scale(load_image('fly3.png'), (173, 64)))
-        self.fly_animation_l.append(pygame.transform.scale(load_image('fly1_l.png'), (173, 64)))
-        self.fly_animation_l.append(pygame.transform.scale(load_image('fly2_l.png'), (173, 64)))
-        self.fly_animation_l.append(pygame.transform.scale(load_image('fly3_l.png'), (173, 64)))
+        self.fly_animation.append(pygame.transform.scale(load_image('fly/fly1.png'), (173, 64)))
+        self.fly_animation.append(pygame.transform.scale(load_image('fly/fly2.png'), (173, 64)))
+        self.fly_animation.append(pygame.transform.scale(load_image('fly/fly3.png'), (173, 64)))
+        self.fly_animation_l.append(pygame.transform.scale(load_image('fly/fly1_l.png'), (173, 64)))
+        self.fly_animation_l.append(pygame.transform.scale(load_image('fly/fly2_l.png'), (173, 64)))
+        self.fly_animation_l.append(pygame.transform.scale(load_image('fly/fly3_l.png'), (173, 64)))
         self.current_im = 0
-        self.image = pygame.transform.scale(load_image('hero.png'), (173, 64))
+        self.image = pygame.transform.scale(load_image('fly/hero.png'), (173, 64))
         self.rect = self.image.get_rect()
         self.rect.y = 635
         self.fly = 50
@@ -116,7 +116,7 @@ class Hero(pygame.sprite.Sprite):
                     self.current_im = 0
                 self.image = self.fly_animation_l[int(self.current_im)]
             else:
-                self.image = pygame.transform.scale(load_image('hero_l.png'), (173, 64))
+                self.image = pygame.transform.scale(load_image('fly/hero_l.png'), (173, 64))
         else:
             if self.is_flying:
                 self.current_im += 0.6
@@ -124,7 +124,7 @@ class Hero(pygame.sprite.Sprite):
                     self.current_im = 0
                 self.image = self.fly_animation[int(self.current_im)]
             else:
-                self.image = pygame.transform.scale(load_image('hero.png'), (173, 64))
+                self.image = pygame.transform.scale(load_image('fly/hero.png'), (173, 64))
 
 
 class Foe(pygame.sprite.Sprite):
@@ -135,16 +135,16 @@ class Foe(pygame.sprite.Sprite):
         self.animation.append(pygame.transform.scale(load_image('eoc_anim/eoc1_1.png'), (150, 166)))
         self.animation.append(pygame.transform.scale(load_image('eoc_anim/eoc1_2.png'), (150, 166)))
         self.animation.append(pygame.transform.scale(load_image('eoc_anim/eoc1_3.png'), (150, 166)))
-        self.attack_animation.append(pygame.transform.scale(load_image('fly1_l.png'), (173, 64)))
-        self.attack_animation.append(pygame.transform.scale(load_image('fly2_l.png'), (173, 64)))
-        self.attack_animation.append(pygame.transform.scale(load_image('fly3_l.png'), (173, 64)))
+        self.attack_animation.append(pygame.transform.scale(load_image('fly/fly1_l.png'), (173, 64)))
+        self.attack_animation.append(pygame.transform.scale(load_image('fly/fly2_l.png'), (173, 64)))
+        self.attack_animation.append(pygame.transform.scale(load_image('fly/fly3_l.png'), (173, 64)))
         self.current_im = 0
         self.image = pygame.transform.scale(load_image('eoc_anim/eoc1_1.png'), (150, 166))
         self.rect = self.image.get_rect()
         self.rect.y = 50
         self.rect.x = 400
         self.attack = False
-        self.health = 50
+        self.health = 70
 
     def update(self):
         if self.attack:
@@ -198,7 +198,6 @@ def load_level_1():
                 shoot = False
         if flLeft:
             player.rect.x -= 10
-            print(1)
         elif flRight:
             player.rect.x += 10
         if flup and player.fly > 0:
@@ -216,9 +215,9 @@ def load_level_1():
             player.is_flying = False
             player.current_im = 0
             if player.left:
-                player.image = pygame.transform.scale(load_image('hero_l.png'), (173, 64))
+                player.image = pygame.transform.scale(load_image('fly/hero_l.png'), (173, 64))
             else:
-                player.image = pygame.transform.scale(load_image('hero.png'), (173, 64))
+                player.image = pygame.transform.scale(load_image('fly/hero.png'), (173, 64))
             player.fly = 50
         else:
             player.is_flying = True
@@ -231,8 +230,8 @@ def load_level_1():
 
         if boss.health > 0:
             gradientRect_horizontal(screen, (255, 172, 93), (139, 0, 0),
-                                    pygame.Rect(boss.rect.x + 74 - 25, boss.rect.y + 109 + 62, 50, 10))
-            pygame.draw.rect(screen, (0, 0, 0), (boss.rect.x + 74 - 25, boss.rect.y + 109 + 62, 50 - boss.health, 10))
+                                    pygame.Rect(boss.rect.x + 74 - 35, boss.rect.y + 109 + 62, 70, 10))
+            pygame.draw.rect(screen, (0, 0, 0), (boss.rect.x + 74 - 35, boss.rect.y + 109 + 62, int(70 - boss.health), 10))
 
         gun = pygame.transform.scale(load_image('the_undertaker.png'), (46, 24))
         gun_l = pygame.transform.scale(load_image('the_undertaker_l.png'), (46, 24))
@@ -263,7 +262,7 @@ def load_level_1():
                             bullet = Bullet(rotated_image, (
                                 int(pivot[0] + offset.rotate(angle)[0] * 3.7),
                                 int(pivot[1] + offset.rotate(angle)[1] * 3.7)),
-                                            angle, 15, 10, bullets1)
+                                            angle, 15, 3, bullets1)
                     else:
                         screen.blit(gun_l, (player.rect.x + 25, player.rect.y + 20))
                 else:
@@ -281,7 +280,7 @@ def load_level_1():
                             rotated_image, a = rotate(bullet_im, angle, pivot, offset)
                             bullet = Bullet(rotated_image, (
                                 int(pivot[0] + offset.rotate(angle)[0] * 3.7),
-                                int(pivot[1] + offset.rotate(angle)[1] * 3.7)), angle, 15, 10, bullets1)
+                                int(pivot[1] + offset.rotate(angle)[1] * 3.7)), angle, 15, 3, bullets1)
                     else:
                         screen.blit(gun, (player.rect.x + 100, player.rect.y + 20))
             else:
@@ -301,7 +300,7 @@ def load_level_1():
                             bullet = Bullet(rotated_image, (
                                 int(pivot[0] + offset.rotate(angle)[0] * 3.7),
                                 int(pivot[1] + offset.rotate(angle)[1] * 3.7)),
-                                            angle, 15, 10, bullets1)
+                                            angle, 15, 3, bullets1)
                     else:
                         screen.blit(gun_l, (player.rect.x + 27, player.rect.y + 25))
                 else:
@@ -319,7 +318,7 @@ def load_level_1():
                             rotated_image, a = rotate(bullet_im, angle, pivot, offset)
                             bullet = Bullet(rotated_image, (
                                 int(pivot[0] + offset.rotate(angle)[0] * 3.7),
-                                int(pivot[1] + offset.rotate(angle)[1] * 3.7)), angle, 15, 10, bullets1)
+                                int(pivot[1] + offset.rotate(angle)[1] * 3.7)), angle, 15, 3, bullets1)
                     else:
                         screen.blit(gun, (player.rect.x + 100, player.rect.y + 25))
 
@@ -341,7 +340,7 @@ def load_level_1():
                             bullet = Bullet(rotated_image, (
                                 int(pivot[0] + offset.rotate(angle)[0] * 3.7),
                                 int(pivot[1] + offset.rotate(angle)[1] * 3.7)),
-                                            angle, 25, 5, bullets1)
+                                            angle, 25, 0.7, bullets1)
                     else:
                         screen.blit(mgun_l, (player.rect.x + 15, player.rect.y + 20))
                 else:
@@ -359,7 +358,7 @@ def load_level_1():
                             rotated_image, a = rotate(bullet_im, angle, pivot, offset)
                             bullet = Bullet(rotated_image, (
                                 int(pivot[0] + offset.rotate(angle)[0] * 3.7),
-                                int(pivot[1] + offset.rotate(angle)[1] * 3.7)), angle, 25, 5, bullets1)
+                                int(pivot[1] + offset.rotate(angle)[1] * 3.7)), angle, 25, 0.7, bullets1)
                     else:
                         screen.blit(mgun, (player.rect.x + 90, player.rect.y + 20))
             else:
@@ -379,7 +378,7 @@ def load_level_1():
                             bullet = Bullet(rotated_image, (
                                 int(pivot[0] + offset.rotate(angle)[0] * 3.7),
                                 int(pivot[1] + offset.rotate(angle)[1] * 3.7)),
-                                            angle, 25, 5, bullets1)
+                                            angle, 25, 0.7, bullets1)
                     else:
                         screen.blit(mgun_l, (player.rect.x + 15, player.rect.y + 25))
                 else:
@@ -397,7 +396,7 @@ def load_level_1():
                             rotated_image, a = rotate(bullet_im, angle, pivot, offset)
                             bullet = Bullet(rotated_image, (
                                 int(pivot[0] + offset.rotate(angle)[0] * 3.7),
-                                int(pivot[1] + offset.rotate(angle)[1] * 3.7)), angle, 25, 5, bullets1)
+                                int(pivot[1] + offset.rotate(angle)[1] * 3.7)), angle, 25, 0.7, bullets1)
                     else:
                         screen.blit(mgun, (player.rect.x + 90, player.rect.y + 25))
         if boss.health <= 0:
@@ -517,7 +516,7 @@ def start_screen():
     play = pygame.transform.scale(load_image('play.png'), (300, 100))
     fon = pygame.transform.scale(load_image('fon.jpg'), (size))
     screen.blit(fon, (0, 0))
-    screen.blit(play, (350, 300))
+    screen.blit(play, (440, 300))
     pygame.mixer.music.load('data/title.ogg')
     pygame.mixer.music.play()
 
@@ -527,7 +526,7 @@ def start_screen():
                 terminate()
             elif event.type == pygame.KEYDOWN or \
                     event.type == pygame.MOUSEBUTTONDOWN:
-                if 350 < pygame.mouse.get_pos()[0] < 650 and 300 < pygame.mouse.get_pos()[1] < 400:
+                if 440 < pygame.mouse.get_pos()[0] < 740 and 300 < pygame.mouse.get_pos()[1] < 400:
                     level_menu_screen()
         pygame.display.flip()
 
@@ -537,10 +536,12 @@ def level_menu_screen():
     medium = pygame.transform.scale(load_image('medium.png'), (150, 150))
     hard = pygame.transform.scale(load_image('hard.png'), (150, 150))
     fon = pygame.transform.scale(load_image('fon.jpg'), (size))
+    back = pygame.transform.scale(load_image('back.png'), (120, 60))
     screen.blit(fon, (0, 0))
-    screen.blit(easy, (200, 250))
-    screen.blit(medium, (425, 250))
-    screen.blit(hard, (650, 250))
+    screen.blit(easy, (300, 300))
+    screen.blit(medium, (525, 300))
+    screen.blit(hard, (750, 300))
+    screen.blit(back, (0, 0))
 
     while True:
         for event in pygame.event.get():
@@ -548,15 +549,17 @@ def level_menu_screen():
                 terminate()
             elif event.type == pygame.KEYDOWN or \
                     event.type == pygame.MOUSEBUTTONDOWN:
-                if 200 < pygame.mouse.get_pos()[0] < 350 and 250 < pygame.mouse.get_pos()[1] < 400:
+                if 300 < pygame.mouse.get_pos()[0] < 450 and 300 < pygame.mouse.get_pos()[1] < 450:
                     pygame.mixer.music.stop()
                     load_level_1()
-                elif 425 < pygame.mouse.get_pos()[0] < 575 and 250 < pygame.mouse.get_pos()[1] < 400:
+                elif 525 < pygame.mouse.get_pos()[0] < 675 and 300 < pygame.mouse.get_pos()[1] < 450:
                     pygame.mixer.music.stop()
                     load_level_2()
-                elif 650 < pygame.mouse.get_pos()[0] < 800 and 250 < pygame.mouse.get_pos()[1] < 400:
+                elif 750 < pygame.mouse.get_pos()[0] < 900 and 300 < pygame.mouse.get_pos()[1] < 450:
                     pygame.mixer.music.stop()
                     load_level_3()
+                elif 0 < pygame.mouse.get_pos()[0] < 120 and 0 < pygame.mouse.get_pos()[1] < 60:
+                    start_screen()
         pygame.display.flip()
 
 
