@@ -134,6 +134,59 @@ class Hero(pygame.sprite.Sprite):
                 self.image = pygame.transform.scale(load_image('fly/hero.png'), (173, 64))
 
 
+class Servant(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = load_image("eoc_anim/ser_of_ct.png")  # loading little eyes
+        self.rect = self.image.get_rect()
+        self.rect.center = (width // 2, height // 2)
+        self.target_pos = None
+        self.moving = False
+        self.move_start_time = None
+        self.move_duration = None
+        self.stop_start_time = None
+        self.stop_duration = None
+
+    def move_to(self, target_pos, move_duration, stop_duration):
+        self.target_pos = target_pos
+        self.moving = True
+        self.move_start_time = pygame.time.get_ticks()
+        self.move_duration = move_duration
+        self.stop_start_time = None
+        self.stop_duration = stop_duration
+
+    def update(self):
+        if self.moving:
+            current_time = pygame.time.get_ticks()
+            elapsed_time = current_time - self.move_start_time
+
+            if elapsed_time < self.move_duration:
+                # Вычисление текущей позиции спрайта во время движения
+                start_pos = self.rect.center
+                end_pos = self.target_pos
+                delta_x = end_pos[0] - start_pos[0]
+                delta_y = end_pos[1] - start_pos[1]
+                current_x = start_pos[0] + (delta_x * elapsed_time / self.move_duration)
+                current_y = start_pos[1] + (delta_y * elapsed_time / self.move_duration)
+                self.rect.center = (current_x, current_y)
+            else:
+                # Спрайт достиг целевой позиции, останавливаем его
+                self.moving = False
+                self.stop_start_time = current_time
+
+            if self.stop_start_time:
+                stop_elapsed_time = current_time - self.stop_start_time
+                if stop_elapsed_time >= self.stop_duration:
+                    # Остановка завершена, генерируем новую целевую позицию
+                    self.target_pos = (random.randint(0, width), random.randint(0, height))
+                    self.moving = True
+                    self.move_start_time = pygame.time.get_ticks()
+
+
+servants = pygame.sprite.Group()
+servants.add(Servant)
+
+
 class Foe(pygame.sprite.Sprite):
     def __init__(self, hero, speed):
         super().__init__(all_sprites)
@@ -154,18 +207,44 @@ class Foe(pygame.sprite.Sprite):
         self.rect.y = -200
         self.here = False
         self.attack = False
+        self.servant = False
         self.health = 70
         self.hero = hero
         self.speed = speed
+        self.time_before_attack = 24
+        self.attack_dash = False
+        self.k = 3
+        self.k1 = 3
 
     def update(self):
-        if self.attack:
-            pass
-        else:
-            self.current_im += 1
-            if self.current_im >= len(self.animation):
-                self.current_im = 0
-            self.image = self.animation[int(self.current_im)]
+        if self.k > 0:
+            if self.time_before_attack > 0:
+                self.time_before_attack -= 1
+                self.servant = False
+            else:
+                self.servant = True
+                self.time_before_attack = 24
+                self.k -= 1
+            if self.servant:
+                print('servant')
+        elif self.k1 > 0:
+            if self.time_before_attack > 0:
+                self.time_before_attack -= 1
+                self.attack = False
+            else:
+                self.attack = True
+                self.time_before_attack = 24
+                self.k1 -= 1
+            if self.attack:
+                print('attack')
+        #                self.attack_dash = True
+        elif self.k == 0 and self.k1 == 0:
+            self.k = 3
+            self.k1 = 3
+        self.current_im += 1
+        if self.current_im >= len(self.animation):
+            self.current_im = 0
+        self.image = self.animation[int(self.current_im)]
 
         cx, cy = (self.hero.rect.x + 30, self.hero.rect.y - 300)
         dx, dy = cx - self.rect.x, cy - self.rect.y
@@ -178,8 +257,16 @@ class Foe(pygame.sprite.Sprite):
 
         if self.rect.x != self.hero.rect.x + 30 or self.rect.y != self.hero.rect.y - 300:
             self.here = False
+        if self.attack_dash:
+            for i in range(3):
+                speed = [10, 10]
+            time = 500
+            start_time = pygame.time.get_ticks()
+            if pygame.time.get_ticks() - start_time >= time:
+                speed = [0, 0]
+            self.atack_dash = False
 
-        if not self.here:
+        elif not self.here:
             if abs(dx) > 0 or abs(dy) > 0:
                 dist = math.hypot(dx, dy)
                 self.rect.x += min(dist, self.speed) * dx / dist
@@ -187,6 +274,8 @@ class Foe(pygame.sprite.Sprite):
             if self.rect.x == self.hero.rect.x + 30 and self.rect.y == self.hero.rect.y - 300:
                 self.here = True
 
+
+# FoE > Update > printservant & printatk > printservant (swap) ser_of_ct.png
 
 bullets1 = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
@@ -199,7 +288,7 @@ def load_level_1():
     screen.blit(level, (0, 0))
     player = Hero()
     flLeft = flRight = flup = shoot = False
-    boss = Foe(player, 3)
+    boss = Foe(player, 7)
 
     while True:
         for event in pygame.event.get():
