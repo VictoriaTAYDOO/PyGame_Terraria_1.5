@@ -1,6 +1,6 @@
 import os
 import sys
-
+import random
 import pygame
 import math
 
@@ -17,6 +17,13 @@ def collideBullets(foe, bullets):
         if center[0] - 52 <= bullet.rect.x <= center[0] + 52 and center[1] - 52 <= bullet.rect.y <= center[1] + 52:
             foe.health -= bullet.damage
             bullet.kill()
+
+
+def collide(rect_x, rect_y, hero):
+    center = (rect_x + 74, rect_y + 109)
+    if center[0] - 52 <= hero.rect.x + 10 <= center[0] + 52 and center[1] - 52 <= hero.rect.y <= center[1] + 52:
+        return True
+    return False
 
 
 def gradientRect_vertical(window, left_colour, right_colour, target_rect):
@@ -128,7 +135,7 @@ class Hero(pygame.sprite.Sprite):
 
 
 class Foe(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, hero, speed):
         super().__init__(all_sprites)
         self.animation = []
         self.attack_animation = []
@@ -143,8 +150,13 @@ class Foe(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.y = 50
         self.rect.x = 400
+        self.rect.x = random.randint(0, 1300)
+        self.rect.y = -200
+        self.here = False
         self.attack = False
         self.health = 70
+        self.hero = hero
+        self.speed = speed
 
     def update(self):
         if self.attack:
@@ -154,6 +166,26 @@ class Foe(pygame.sprite.Sprite):
             if self.current_im >= len(self.animation):
                 self.current_im = 0
             self.image = self.animation[int(self.current_im)]
+
+        cx, cy = (self.hero.rect.x + 30, self.hero.rect.y - 300)
+        dx, dy = cx - self.rect.x, cy - self.rect.y
+
+        offset = pygame.math.Vector2(0, 0)
+        pivot = [self.rect.x + 90, self.rect.y + 10]
+        rel_x, rel_y = self.hero.rect.x - pivot[0], self.hero.rect.y - pivot[1]
+        angle = -int((180 / math.pi) * -math.atan2(rel_y, rel_x))
+        self.image, rect = rotate(self.image, angle - 100, pivot, offset)
+
+        if self.rect.x != self.hero.rect.x + 30 or self.rect.y != self.hero.rect.y - 300:
+            self.here = False
+
+        if not self.here:
+            if abs(dx) > 0 or abs(dy) > 0:
+                dist = math.hypot(dx, dy)
+                self.rect.x += min(dist, self.speed) * dx / dist
+                self.rect.y += min(dist, self.speed) * dy / dist
+            if self.rect.x == self.hero.rect.x + 30 and self.rect.y == self.hero.rect.y - 300:
+                self.here = True
 
 
 bullets1 = pygame.sprite.Group()
@@ -167,7 +199,7 @@ def load_level_1():
     screen.blit(level, (0, 0))
     player = Hero()
     flLeft = flRight = flup = shoot = False
-    boss = Foe()
+    boss = Foe(player, 3)
 
     while True:
         for event in pygame.event.get():
@@ -230,8 +262,9 @@ def load_level_1():
 
         if boss.health > 0:
             gradientRect_horizontal(screen, (255, 172, 93), (139, 0, 0),
-                                    pygame.Rect(boss.rect.x + 74 - 35, boss.rect.y + 109 + 62, 70, 10))
-            pygame.draw.rect(screen, (0, 0, 0), (boss.rect.x + 74 - 35, boss.rect.y + 109 + 62, int(70 - boss.health), 10))
+                                    pygame.Rect(boss.rect.x + 74 - 35, boss.rect.y + 109 + 72, 70, 10))
+            pygame.draw.rect(screen, (0, 0, 0),
+                             (boss.rect.x + 74 - 35, boss.rect.y + 109 + 72, int(70 - boss.health), 10))
 
         gun = pygame.transform.scale(load_image('the_undertaker.png'), (46, 24))
         gun_l = pygame.transform.scale(load_image('the_undertaker_l.png'), (46, 24))
@@ -262,7 +295,7 @@ def load_level_1():
                             bullet = Bullet(rotated_image, (
                                 int(pivot[0] + offset.rotate(angle)[0] * 3.7),
                                 int(pivot[1] + offset.rotate(angle)[1] * 3.7)),
-                                            angle, 15, 3, bullets1)
+                                            angle, 15, 2, bullets1)
                     else:
                         screen.blit(gun_l, (player.rect.x + 25, player.rect.y + 20))
                 else:
@@ -280,7 +313,7 @@ def load_level_1():
                             rotated_image, a = rotate(bullet_im, angle, pivot, offset)
                             bullet = Bullet(rotated_image, (
                                 int(pivot[0] + offset.rotate(angle)[0] * 3.7),
-                                int(pivot[1] + offset.rotate(angle)[1] * 3.7)), angle, 15, 3, bullets1)
+                                int(pivot[1] + offset.rotate(angle)[1] * 3.7)), angle, 15, 2, bullets1)
                     else:
                         screen.blit(gun, (player.rect.x + 100, player.rect.y + 20))
             else:
@@ -300,7 +333,7 @@ def load_level_1():
                             bullet = Bullet(rotated_image, (
                                 int(pivot[0] + offset.rotate(angle)[0] * 3.7),
                                 int(pivot[1] + offset.rotate(angle)[1] * 3.7)),
-                                            angle, 15, 3, bullets1)
+                                            angle, 15, 2, bullets1)
                     else:
                         screen.blit(gun_l, (player.rect.x + 27, player.rect.y + 25))
                 else:
@@ -318,7 +351,7 @@ def load_level_1():
                             rotated_image, a = rotate(bullet_im, angle, pivot, offset)
                             bullet = Bullet(rotated_image, (
                                 int(pivot[0] + offset.rotate(angle)[0] * 3.7),
-                                int(pivot[1] + offset.rotate(angle)[1] * 3.7)), angle, 15, 3, bullets1)
+                                int(pivot[1] + offset.rotate(angle)[1] * 3.7)), angle, 15, 2, bullets1)
                     else:
                         screen.blit(gun, (player.rect.x + 100, player.rect.y + 25))
 
@@ -340,7 +373,7 @@ def load_level_1():
                             bullet = Bullet(rotated_image, (
                                 int(pivot[0] + offset.rotate(angle)[0] * 3.7),
                                 int(pivot[1] + offset.rotate(angle)[1] * 3.7)),
-                                            angle, 25, 0.7, bullets1)
+                                            angle, 25, 0.6, bullets1)
                     else:
                         screen.blit(mgun_l, (player.rect.x + 15, player.rect.y + 20))
                 else:
@@ -358,7 +391,7 @@ def load_level_1():
                             rotated_image, a = rotate(bullet_im, angle, pivot, offset)
                             bullet = Bullet(rotated_image, (
                                 int(pivot[0] + offset.rotate(angle)[0] * 3.7),
-                                int(pivot[1] + offset.rotate(angle)[1] * 3.7)), angle, 25, 0.7, bullets1)
+                                int(pivot[1] + offset.rotate(angle)[1] * 3.7)), angle, 25, 0.6, bullets1)
                     else:
                         screen.blit(mgun, (player.rect.x + 90, player.rect.y + 20))
             else:
@@ -378,7 +411,7 @@ def load_level_1():
                             bullet = Bullet(rotated_image, (
                                 int(pivot[0] + offset.rotate(angle)[0] * 3.7),
                                 int(pivot[1] + offset.rotate(angle)[1] * 3.7)),
-                                            angle, 25, 0.7, bullets1)
+                                            angle, 25, 0.6, bullets1)
                     else:
                         screen.blit(mgun_l, (player.rect.x + 15, player.rect.y + 25))
                 else:
@@ -396,7 +429,7 @@ def load_level_1():
                             rotated_image, a = rotate(bullet_im, angle, pivot, offset)
                             bullet = Bullet(rotated_image, (
                                 int(pivot[0] + offset.rotate(angle)[0] * 3.7),
-                                int(pivot[1] + offset.rotate(angle)[1] * 3.7)), angle, 25, 0.7, bullets1)
+                                int(pivot[1] + offset.rotate(angle)[1] * 3.7)), angle, 25, 0.6, bullets1)
                     else:
                         screen.blit(mgun, (player.rect.x + 90, player.rect.y + 25))
         if boss.health <= 0:
