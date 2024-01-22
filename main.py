@@ -19,9 +19,26 @@ def collideBullets(foe, bullets):
             bullet.kill()
 
 
+def collideServants(hero_rect, servants):
+    damage = 0
+    for servant in servants:
+        center = servant.rect.center
+        if hero_rect.x + 75 <= center[0] <= hero_rect.x + 100 and hero_rect.y <= center[1] <= hero_rect.y + 60:
+            servant.kill()
+            damage = 1
+    return damage
+
+
 def collide(rect_x, rect_y, hero):
     center = (rect_x + 74, rect_y + 109)
-    if center[0] - 52 <= hero.rect.x + 10 <= center[0] + 52 and center[1] - 52 <= hero.rect.y <= center[1] + 52:
+    if center[0] - 52 <= hero.rect.x + 90 <= center[0] + 52 and center[1] - 52 <= hero.rect.y <= center[1] + 52:
+        return True
+    return False
+
+
+def collidePoint(rect_x, rect_y, hero):
+    center = (rect_x + 74, rect_y + 109)
+    if center[0] - 52 <= hero.rect.x <= center[0] + 52 and center[1] - 52 <= hero.rect.y <= center[1] + 52:
         return True
     return False
 
@@ -93,6 +110,20 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.center = calculate_new_xy(self.rect.center, self.speed, self.direction)
 
 
+class Servant(pygame.sprite.Sprite):
+    def __init__(self, image, coords, direction, speed, damage, group):
+        super().__init__(group)
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.center = (coords[0], coords[1])
+        self.direction = math.radians(direction)
+        self.speed = speed
+        self.damage = damage
+
+    def update(self):
+        self.rect.center = calculate_new_xy(self.rect.center, self.speed, self.direction)
+
+
 class Hero(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__(all_sprites)
@@ -114,6 +145,8 @@ class Hero(pygame.sprite.Sprite):
         self.choice = 0
         self.gun_is_ready = 15
         self.mgun_is_ready = 5
+        self.health = 100
+        self.timer = 0
 
     def update(self):
         if self.left:
@@ -134,6 +167,15 @@ class Hero(pygame.sprite.Sprite):
                 self.image = pygame.transform.scale(load_image('fly/hero.png'), (173, 64))
 
 
+class InvisHero(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__(all_sprites)
+        self.image = pygame.transform.scale(load_image('fly/ihero.png'), (1, 1))
+        self.rect = self.image.get_rect()
+        self.rect.y = 635
+        self.fly = 50
+
+
 class Foe(pygame.sprite.Sprite):
     def __init__(self, hero, speed):
         super().__init__(all_sprites)
@@ -146,67 +188,76 @@ class Foe(pygame.sprite.Sprite):
         self.attack_animation.append(pygame.transform.scale(load_image('fly/fly2_l.png'), (173, 64)))
         self.attack_animation.append(pygame.transform.scale(load_image('fly/fly3_l.png'), (173, 64)))
         self.current_im = 0
-        self.image = pygame.transform.scale(load_image('eoc_anim/eoc1_1.png'), (150, 166))
+        self.image = self.animation[int(self.current_im)]
         self.rect = self.image.get_rect()
-        self.rect.y = 50
-        self.rect.x = 400
         self.rect.x = random.randint(0, 1300)
         self.rect.y = -200
         self.here = False
         self.attack = False
-        self.servant = False
         self.health = 70
         self.hero = hero
         self.speed = speed
-        self.time_before_attack = 24
-        self.attack_dash = False
-        self.k = 3
-        self.k1 = 3
+        self.ready = 0
+        self.servant = 0
+        self.ram = False
 
     def update(self):
-        if self.k > 0:
-            if self.time_before_attack > 0:
-                self.time_before_attack -= 1
-                self.servant = False
-            else:
-                self.servant = True
-                self.time_before_attack = 24
-                self.k -= 1
-            if self.servant:
-                print('servant')
-        elif self.k1 > 0:
-            if self.time_before_attack > 0:
-                self.time_before_attack -= 1
-                self.attack = False
-            else:
-                self.attack = True
-                self.time_before_attack = 24
-                self.k1 -= 1
-            if self.attack:
-                print('attack')
-#                self.attack_dash = True
-        elif self.k == 0 and self.k1 == 0:
-            self.k = 3
-            self.k1 = 3
-        self.current_im += 1
-        if self.current_im >= len(self.animation):
-            self.current_im = 0
-        self.image = self.animation[int(self.current_im)]
-
         cx, cy = (self.hero.rect.x + 30, self.hero.rect.y - 300)
         dx, dy = cx - self.rect.x, cy - self.rect.y
-
+        dist1 = math.hypot(abs(self.hero.rect.x + 90 - self.rect.x - 74), abs(self.hero.rect.y + 5 - self.rect.y - 109))
         offset = pygame.math.Vector2(0, 0)
         pivot = [self.rect.x + 90, self.rect.y + 10]
         rel_x, rel_y = self.hero.rect.x - pivot[0], self.hero.rect.y - pivot[1]
         angle = -int((180 / math.pi) * -math.atan2(rel_y, rel_x))
+
+        if self.attack:
+            pass
+        else:
+            self.current_im += 1
+            if self.current_im >= len(self.animation):
+                self.current_im = 0
+            self.image = self.animation[int(self.current_im)]
+        if dist1 <= 300:
+            self.ready += 1
+        if self.servant == 3 and self.ready >= 50 and dist1 <= 300:
+            self.ram = True
+            self.hx = self.hero.rect.x + 90
+            self.hy = self.hero.rect.y + 10
+            self.point = InvisHero()
+            self.point.rect.x = self.hx
+            self.point.rect.y = self.hy
+            self.ready = -30
+            self.servant = 0
+        if self.ram:
+            if abs(self.hx - self.rect.x - 74) > 0 or abs(self.hy - self.rect.y - 109) > 0:
+                dist = math.hypot(self.hx - self.rect.x, self.hy - self.rect.y)
+                self.rect.x += min(dist, self.speed + 40) * (self.hx - self.rect.x - 74) / dist
+                self.rect.y += min(dist, self.speed + 40) * (self.hy - self.rect.y - 109) / dist
+            if collidePoint(self.rect.x, self.rect.y, self.point) or collide(self.rect.x, self.rect.y, self.hero):
+                self.rect.x += min(dist, self.speed + 40) * (self.hx - self.rect.x - 74) / dist
+                self.rect.y += min(dist, self.speed + 40) * (self.hy - self.rect.y - 109) / dist
+                self.ram = False
+                self.point.kill()
+
         self.image, rect = rotate(self.image, angle - 100, pivot, offset)
+
+        if self.ready >= 15 and dist1 <= 300:
+            if self.servant < 3:
+                pivot = [self.rect.x + 74, self.rect.y + 109]
+                offset = pygame.math.Vector2(0, 15)
+                self.servant += 1
+                ser = pygame.transform.scale(load_image('eoc_anim/ser_of_ct.png'), (30, 20))
+                ser_img, rect = rotate(ser, angle - 100, pivot, offset)
+                servant = Servant(ser_img, (
+                    int(pivot[0] + offset.rotate(angle - 100)[0] * 3.7),
+                    int(pivot[1] + offset.rotate(angle - 100)[1] * 3.7)),
+                                  angle, 10, 2, servants1)
+                self.ready = 0
 
         if self.rect.x != self.hero.rect.x + 30 or self.rect.y != self.hero.rect.y - 300:
             self.here = False
-        if self.attack_dash:
-            pass
-        elif not self.here:
+
+        if not self.here:
             if abs(dx) > 0 or abs(dy) > 0:
                 dist = math.hypot(dx, dy)
                 self.rect.x += min(dist, self.speed) * dx / dist
@@ -216,6 +267,7 @@ class Foe(pygame.sprite.Sprite):
 
 
 bullets1 = pygame.sprite.Group()
+servants1 = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
 
 
@@ -226,7 +278,7 @@ def load_level_1():
     screen.blit(level, (0, 0))
     player = Hero()
     flLeft = flRight = flup = shoot = False
-    boss = Foe(player, 7)
+    boss = Foe(player, 3)
 
     while True:
         for event in pygame.event.get():
@@ -281,11 +333,17 @@ def load_level_1():
         else:
             player.is_flying = True
 
-        screen.blit(level, (0, 0))
+        a = collideServants(player.rect, servants1)
+        if (collide(boss.rect.x, boss.rect.y, player) or a > 0) and player.timer > 15:
+            if collide(boss.rect.x, boss.rect.y, player):
+                player.health -= 25
+            else:
+                player.health -= 10
+            player.timer = 0
+        else:
+            player.timer += 1
 
-        gradientRect_vertical(screen, (141, 175, 254), (173, 103, 255), pygame.Rect(40, 45, 10, 50))
-        pygame.draw.rect(screen, (0, 0, 0), (40, 45, 10, 50 - player.fly))
-        frame = pygame.transform.scale(load_image('frame2.png'), (30, 90))
+        screen.blit(level, (0, 0))
 
         if boss.health > 0:
             gradientRect_horizontal(screen, (255, 172, 93), (139, 0, 0),
@@ -298,11 +356,13 @@ def load_level_1():
         mgun = pygame.transform.scale(load_image('megashark.png'), (70, 28))
         mgun_l = pygame.transform.scale(load_image('megashark_l.png'), (70, 28))
         bullet_im = pygame.transform.scale(load_image('bullet.png'), (20, 2))
-        screen.blit(frame, (30, 20))
+
         all_sprites.draw(screen)
         all_sprites.update()
         bullets1.draw(screen)
         bullets1.update()
+        servants1.draw(screen)
+        servants1.update()
 
         if player.choice == 1:
             if player.is_flying:
@@ -459,8 +519,23 @@ def load_level_1():
                                 int(pivot[1] + offset.rotate(angle)[1] * 3.7)), angle, 25, 0.6, bullets1)
                     else:
                         screen.blit(mgun, (player.rect.x + 90, player.rect.y + 25))
+
+        gradientRect_vertical(screen, (141, 175, 254), (173, 103, 255), pygame.Rect(40, 45, 10, 50))
+        pygame.draw.rect(screen, (0, 0, 0), (40, 45, 10, 50 - player.fly))
+        frame = pygame.transform.scale(load_image('frame2.png'), (30, 90))
+        screen.blit(frame, (30, 20))
+
+        pygame.draw.rect(screen, (138, 9, 9),
+                         (100, 50, 200, 20))
+        pygame.draw.rect(screen, (0, 0, 0),
+                         (100, 50, int(200 - player.health * 2), 20))
+
         if boss.health <= 0:
             boss.kill()
+            return False
+        if player.health <= 0:
+            return True
+
         player.gun_is_ready += 1
         player.mgun_is_ready += 1
         clock.tick(15)
