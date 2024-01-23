@@ -19,9 +19,26 @@ def collideBullets(foe, bullets):
             bullet.kill()
 
 
+def collideServants(hero_rect, servants):
+    damage = 0
+    for servant in servants:
+        center = servant.rect.center
+        if hero_rect.x + 75 <= center[0] <= hero_rect.x + 100 and hero_rect.y <= center[1] <= hero_rect.y + 60:
+            servant.kill()
+            damage = 1
+    return damage
+
+
 def collide(rect_x, rect_y, hero):
     center = (rect_x + 74, rect_y + 109)
-    if center[0] - 52 <= hero.rect.x + 10 <= center[0] + 52 and center[1] - 52 <= hero.rect.y <= center[1] + 52:
+    if center[0] - 52 <= hero.rect.x + 90 <= center[0] + 52 and center[1] - 52 <= hero.rect.y <= center[1] + 52:
+        return True
+    return False
+
+
+def collidePoint(rect_x, rect_y, hero):
+    center = (rect_x + 74, rect_y + 109)
+    if center[0] - 52 <= hero.rect.x <= center[0] + 52 and center[1] - 52 <= hero.rect.y <= center[1] + 52:
         return True
     return False
 
@@ -93,19 +110,33 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.center = calculate_new_xy(self.rect.center, self.speed, self.direction)
 
 
+class Servant(pygame.sprite.Sprite):
+    def __init__(self, image, coords, direction, speed, damage, group):
+        super().__init__(group)
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.center = (coords[0], coords[1])
+        self.direction = math.radians(direction)
+        self.speed = speed
+        self.damage = damage
+
+    def update(self):
+        self.rect.center = calculate_new_xy(self.rect.center, self.speed, self.direction)
+
+
 class Hero(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__(all_sprites)
         self.fly_animation = []
         self.fly_animation_l = []
-        self.fly_animation.append(pygame.transform.scale(load_image('fly/fly1.png'), (173, 64)))
-        self.fly_animation.append(pygame.transform.scale(load_image('fly/fly2.png'), (173, 64)))
-        self.fly_animation.append(pygame.transform.scale(load_image('fly/fly3.png'), (173, 64)))
-        self.fly_animation_l.append(pygame.transform.scale(load_image('fly/fly1_l.png'), (173, 64)))
-        self.fly_animation_l.append(pygame.transform.scale(load_image('fly/fly2_l.png'), (173, 64)))
-        self.fly_animation_l.append(pygame.transform.scale(load_image('fly/fly3_l.png'), (173, 64)))
+        self.fly_animation.append(pygame.transform.scale(load_image('player/fly1.png'), (173, 64)))
+        self.fly_animation.append(pygame.transform.scale(load_image('player/fly2.png'), (173, 64)))
+        self.fly_animation.append(pygame.transform.scale(load_image('player/fly3.png'), (173, 64)))
+        self.fly_animation_l.append(pygame.transform.scale(load_image('player/fly1_l.png'), (173, 64)))
+        self.fly_animation_l.append(pygame.transform.scale(load_image('player/fly2_l.png'), (173, 64)))
+        self.fly_animation_l.append(pygame.transform.scale(load_image('player/fly3_l.png'), (173, 64)))
         self.current_im = 0
-        self.image = pygame.transform.scale(load_image('fly/hero.png'), (173, 64))
+        self.image = pygame.transform.scale(load_image('player/hero.png'), (173, 64))
         self.rect = self.image.get_rect()
         self.rect.y = 635
         self.fly = 50
@@ -114,6 +145,8 @@ class Hero(pygame.sprite.Sprite):
         self.choice = 0
         self.gun_is_ready = 15
         self.mgun_is_ready = 5
+        self.health = 100
+        self.timer = 0
 
     def update(self):
         if self.left:
@@ -123,7 +156,7 @@ class Hero(pygame.sprite.Sprite):
                     self.current_im = 0
                 self.image = self.fly_animation_l[int(self.current_im)]
             else:
-                self.image = pygame.transform.scale(load_image('fly/hero_l.png'), (173, 64))
+                self.image = pygame.transform.scale(load_image('player/hero_l.png'), (173, 64))
         else:
             if self.is_flying:
                 self.current_im += 0.6
@@ -131,60 +164,16 @@ class Hero(pygame.sprite.Sprite):
                     self.current_im = 0
                 self.image = self.fly_animation[int(self.current_im)]
             else:
-                self.image = pygame.transform.scale(load_image('fly/hero.png'), (173, 64))
+                self.image = pygame.transform.scale(load_image('player/hero.png'), (173, 64))
 
 
-class Servant(pygame.sprite.Sprite):
+class InvisHero(pygame.sprite.Sprite):
     def __init__(self):
-        super().__init__()
-        self.image = load_image("eoc_anim/ser_of_ct.png")  # loading little eyes
+        super().__init__(all_sprites)
+        self.image = pygame.transform.scale(load_image('player/hero.png'), (1, 1))
         self.rect = self.image.get_rect()
-        self.rect.center = (width // 2, height // 2)
-        self.target_pos = None
-        self.moving = False
-        self.move_start_time = None
-        self.move_duration = None
-        self.stop_start_time = None
-        self.stop_duration = None
-
-    def move_to(self, target_pos, move_duration, stop_duration):
-        self.target_pos = target_pos
-        self.moving = True
-        self.move_start_time = pygame.time.get_ticks()
-        self.move_duration = move_duration
-        self.stop_start_time = None
-        self.stop_duration = stop_duration
-
-    def update(self):
-        if self.moving:
-            current_time = pygame.time.get_ticks()
-            elapsed_time = current_time - self.move_start_time
-
-            if elapsed_time < self.move_duration:
-                # Вычисление текущей позиции спрайта во время движения
-                start_pos = self.rect.center
-                end_pos = self.target_pos
-                delta_x = end_pos[0] - start_pos[0]
-                delta_y = end_pos[1] - start_pos[1]
-                current_x = start_pos[0] + (delta_x * elapsed_time / self.move_duration)
-                current_y = start_pos[1] + (delta_y * elapsed_time / self.move_duration)
-                self.rect.center = (current_x, current_y)
-            else:
-                # Спрайт достиг целевой позиции, останавливаем его
-                self.moving = False
-                self.stop_start_time = current_time
-
-            if self.stop_start_time:
-                stop_elapsed_time = current_time - self.stop_start_time
-                if stop_elapsed_time >= self.stop_duration:
-                    # Остановка завершена, генерируем новую целевую позицию
-                    self.target_pos = (random.randint(0, width), random.randint(0, height))
-                    self.moving = True
-                    self.move_start_time = pygame.time.get_ticks()
-
-
-servants = pygame.sprite.Group()
-servants.add(Servant)
+        self.rect.y = 635
+        self.fly = 50
 
 
 class Foe(pygame.sprite.Sprite):
@@ -195,78 +184,80 @@ class Foe(pygame.sprite.Sprite):
         self.animation.append(pygame.transform.scale(load_image('eoc_anim/eoc1_1.png'), (150, 166)))
         self.animation.append(pygame.transform.scale(load_image('eoc_anim/eoc1_2.png'), (150, 166)))
         self.animation.append(pygame.transform.scale(load_image('eoc_anim/eoc1_3.png'), (150, 166)))
-        self.attack_animation.append(pygame.transform.scale(load_image('fly/fly1_l.png'), (173, 64)))
-        self.attack_animation.append(pygame.transform.scale(load_image('fly/fly2_l.png'), (173, 64)))
-        self.attack_animation.append(pygame.transform.scale(load_image('fly/fly3_l.png'), (173, 64)))
+        self.attack_animation.append(pygame.transform.scale(load_image('player/fly1_l.png'), (173, 64)))
+        self.attack_animation.append(pygame.transform.scale(load_image('player/fly2_l.png'), (173, 64)))
+        self.attack_animation.append(pygame.transform.scale(load_image('player/fly3_l.png'), (173, 64)))
         self.current_im = 0
-        self.image = pygame.transform.scale(load_image('eoc_anim/eoc1_1.png'), (150, 166))
+        self.image = self.animation[int(self.current_im)]
         self.rect = self.image.get_rect()
-        self.rect.y = 50
-        self.rect.x = 400
         self.rect.x = random.randint(0, 1300)
         self.rect.y = -200
         self.here = False
         self.attack = False
-        self.servant = False
         self.health = 70
         self.hero = hero
         self.speed = speed
-        self.time_before_attack = 24
-        self.attack_dash = False
-        self.k = 3
-        self.k1 = 3
+        self.ready = 0
+        self.servant = 0
+        self.ram = False
 
     def update(self):
-        if self.k > 0:
-            if self.time_before_attack > 0:
-                self.time_before_attack -= 1
-                self.servant = False
-            else:
-                self.servant = True
-                self.time_before_attack = 24
-                self.k -= 1
-            if self.servant:
-                print('servant')
-        elif self.k1 > 0:
-            if self.time_before_attack > 0:
-                self.time_before_attack -= 1
-                self.attack = False
-            else:
-                self.attack = True
-                self.time_before_attack = 24
-                self.k1 -= 1
-            if self.attack:
-                print('attack')
-        #                self.attack_dash = True
-        elif self.k == 0 and self.k1 == 0:
-            self.k = 3
-            self.k1 = 3
-        self.current_im += 1
-        if self.current_im >= len(self.animation):
-            self.current_im = 0
-        self.image = self.animation[int(self.current_im)]
-
         cx, cy = (self.hero.rect.x + 30, self.hero.rect.y - 300)
         dx, dy = cx - self.rect.x, cy - self.rect.y
-
+        dist1 = math.hypot(abs(self.hero.rect.x + 90 - self.rect.x - 74), abs(self.hero.rect.y + 5 - self.rect.y - 109))
         offset = pygame.math.Vector2(0, 0)
         pivot = [self.rect.x + 90, self.rect.y + 10]
         rel_x, rel_y = self.hero.rect.x - pivot[0], self.hero.rect.y - pivot[1]
         angle = -int((180 / math.pi) * -math.atan2(rel_y, rel_x))
+
+        if self.attack:
+            pass
+        else:
+            self.current_im += 1
+            if self.current_im >= len(self.animation):
+                self.current_im = 0
+            self.image = self.animation[int(self.current_im)]
+        if dist1 <= 300:
+            self.ready += 1
+        if self.servant == 3 and self.ready >= 50 and dist1 <= 300:
+            self.ram = True
+            self.hx = self.hero.rect.x + 90
+            self.hy = self.hero.rect.y + 10
+            self.point = InvisHero()
+            self.point.rect.x = self.hx
+            self.point.rect.y = self.hy
+            self.ready = -30
+            self.servant = 0
+        if self.ram:
+            if abs(self.hx - self.rect.x - 74) > 0 or abs(self.hy - self.rect.y - 109) > 0:
+                dist = math.hypot(self.hx - self.rect.x, self.hy - self.rect.y)
+                self.rect.x += min(dist, self.speed + 40) * (self.hx - self.rect.x - 74) / dist
+                self.rect.y += min(dist, self.speed + 40) * (self.hy - self.rect.y - 109) / dist
+            if collidePoint(self.rect.x, self.rect.y, self.point) or collide(self.rect.x, self.rect.y, self.hero):
+                self.rect.x += min(dist, self.speed + 40) * (self.hx - self.rect.x - 74) / dist
+                self.rect.y += min(dist, self.speed + 40) * (self.hy - self.rect.y - 109) / dist
+                self.ram = False
+                self.point.kill()
+
         self.image, rect = rotate(self.image, angle - 100, pivot, offset)
+
+        if self.ready >= 15 and dist1 <= 300:
+            if self.servant < 3:
+                pivot = [self.rect.x + 74, self.rect.y + 109]
+                offset = pygame.math.Vector2(0, 15)
+                self.servant += 1
+                ser = pygame.transform.scale(load_image('eoc_anim/ser_of_ct.png'), (30, 20))
+                ser_img, rect = rotate(ser, angle - 100, pivot, offset)
+                servant = Servant(ser_img, (
+                    int(pivot[0] + offset.rotate(angle - 100)[0] * 3.7),
+                    int(pivot[1] + offset.rotate(angle - 100)[1] * 3.7)),
+                                  angle, 10, 2, servants1)
+                self.ready = 0
 
         if self.rect.x != self.hero.rect.x + 30 or self.rect.y != self.hero.rect.y - 300:
             self.here = False
-        if self.attack_dash:
-            for i in range(3):
-                speed = [10, 10]
-            time = 500
-            start_time = pygame.time.get_ticks()
-            if pygame.time.get_ticks() - start_time >= time:
-                speed = [0, 0]
-            self.atack_dash = False
 
-        elif not self.here:
+        if not self.here:
             if abs(dx) > 0 or abs(dy) > 0:
                 dist = math.hypot(dx, dy)
                 self.rect.x += min(dist, self.speed) * dx / dist
@@ -275,20 +266,211 @@ class Foe(pygame.sprite.Sprite):
                 self.here = True
 
 
-# FoE > Update > printservant & printatk > printservant (swap) ser_of_ct.png
+class TwinsRet(pygame.sprite.Sprite):
+    def __init__(self, hero, speed, servants):
+        super().__init__(all_sprites)
+        self.animation = []
+        self.attack_animation = []
+        self.animation.append(pygame.transform.scale(load_image('tw_anim/tw_ret1_1.png'), (150, 166)))
+        self.animation.append(pygame.transform.scale(load_image('tw_anim/tw_ret1_2.png'), (150, 166)))
+        self.animation.append(pygame.transform.scale(load_image('tw_anim/tw_ret1_3.png'), (150, 166)))
+        self.attack_animation.append(pygame.transform.scale(load_image('fly/fly1_l.png'), (173, 64)))
+        self.attack_animation.append(pygame.transform.scale(load_image('fly/fly2_l.png'), (173, 64)))
+        self.attack_animation.append(pygame.transform.scale(load_image('fly/fly3_l.png'), (173, 64)))
+        self.current_im = 0
+        self.image = self.animation[int(self.current_im)]
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randint(0, 1300)
+        self.rect.y = -200
+        self.here = False
+        self.attack = False
+        self.killed = False
+        self.health = 70
+        self.hero = hero
+        self.speed = speed
+        self.ready = 0
+        self.servant = 0
+        self.ram = False
+        self.servants = servants
+
+    def update(self):
+        if self.killed:
+            self.rect.y = 10000
+        cx, cy = (self.hero.rect.x - 30, self.hero.rect.y - 300)
+        dx, dy = cx - self.rect.x, cy - self.rect.y
+        dist1 = math.hypot(abs(self.hero.rect.x + 90 - self.rect.x - 74), abs(self.hero.rect.y + 5 - self.rect.y - 109))
+        offset = pygame.math.Vector2(0, 0)
+        pivot = [self.rect.x + 90, self.rect.y + 10]
+        rel_x, rel_y = self.hero.rect.x - pivot[0], self.hero.rect.y - pivot[1]
+        angle = -int((180 / math.pi) * -math.atan2(rel_y, rel_x))
+
+        if self.attack:
+            pass
+        else:
+            self.current_im += 1
+            if self.current_im >= len(self.animation):
+                self.current_im = 0
+            self.image = self.animation[int(self.current_im)]
+        if dist1 <= 300:
+            self.ready += 1
+        if self.servant == 3 and self.ready >= 50 and dist1 <= 300:
+            self.ram = True
+            self.hx = self.hero.rect.x + 90
+            self.hy = self.hero.rect.y + 10
+            self.point = InvisHero()
+            self.point.rect.x = self.hx
+            self.point.rect.y = self.hy
+            self.ready = -30
+            self.servant = 0
+        if self.ram:
+            if abs(self.hx - self.rect.x - 74) > 0 or abs(self.hy - self.rect.y - 109) > 0:
+                dist = math.hypot(self.hx - self.rect.x, self.hy - self.rect.y)
+                self.rect.x += min(dist, self.speed + 40) * (self.hx - self.rect.x - 74) / dist
+                self.rect.y += min(dist, self.speed + 40) * (self.hy - self.rect.y - 109) / dist
+            if collidePoint(self.rect.x, self.rect.y, self.point) or collide(self.rect.x, self.rect.y, self.hero):
+                self.rect.x += min(dist, self.speed + 40) * (self.hx - self.rect.x - 74) / dist
+                self.rect.y += min(dist, self.speed + 40) * (self.hy - self.rect.y - 109) / dist
+                self.ram = False
+                self.point.kill()
+
+        self.image, rect = rotate(self.image, angle - 100, pivot, offset)
+
+        if self.ready >= 15 and dist1 <= 300:
+            if self.servant < 3:
+                pivot = [self.rect.x + 74, self.rect.y + 109]
+                offset = pygame.math.Vector2(0, 15)
+                self.servant += 1
+                ser = pygame.transform.scale(load_image('eoc_anim/ser_of_ct.png'), (30, 20))
+                ser_img, rect = rotate(ser, angle - 100, pivot, offset)
+                servant = Servant(ser_img, (
+                    int(pivot[0] + offset.rotate(angle - 100)[0] * 3.7),
+                    int(pivot[1] + offset.rotate(angle - 100)[1] * 3.7)),
+                                  angle, 10, 2, self.servants)
+                self.ready = 0
+
+        if self.rect.x != self.hero.rect.x + 30 or self.rect.y != self.hero.rect.y - 300:
+            self.here = False
+
+        if not self.here:
+            if abs(dx) > 0 or abs(dy) > 0:
+                dist = math.hypot(dx, dy)
+                self.rect.x += min(dist, self.speed) * dx / dist
+                self.rect.y += min(dist, self.speed) * dy / dist
+            if self.rect.x == self.hero.rect.x + 30 and self.rect.y == self.hero.rect.y - 300:
+                self.here = True
+
+
+class TwinsSpaz(pygame.sprite.Sprite):
+    def __init__(self, hero, speed, servants):
+        super().__init__(all_sprites)
+        self.animation = []
+        self.attack_animation = []
+        self.animation.append(pygame.transform.scale(load_image('tw_anim/tw_spaz1_1.png'), (150, 166)))
+        self.animation.append(pygame.transform.scale(load_image('tw_anim/tw_spaz1_2.png'), (150, 166)))
+        self.animation.append(pygame.transform.scale(load_image('tw_anim/tw_spaz1_3.png'), (150, 166)))
+        self.attack_animation.append(pygame.transform.scale(load_image('fly/fly1_l.png'), (173, 64)))
+        self.attack_animation.append(pygame.transform.scale(load_image('fly/fly2_l.png'), (173, 64)))
+        self.attack_animation.append(pygame.transform.scale(load_image('fly/fly3_l.png'), (173, 64)))
+        self.current_im = 0
+        self.image = self.animation[int(self.current_im)]
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randint(0, 1300)
+        self.rect.y = -200
+        self.here = False
+        self.attack = False
+        self.killed = False
+        self.health = 70
+        self.hero = hero
+        self.speed = speed
+        self.ready = 0
+        self.servant = 0
+        self.ram = False
+        self.servants = servants
+
+    def update(self):
+        if self.killed:
+            self.rect.y = 10000
+        cx, cy = (self.hero.rect.x + 150, self.hero.rect.y - 300)
+        dx, dy = cx - self.rect.x, cy - self.rect.y
+        dist1 = math.hypot(abs(self.hero.rect.x + 90 - self.rect.x - 74), abs(self.hero.rect.y + 5 - self.rect.y - 109))
+        offset = pygame.math.Vector2(0, 0)
+        pivot = [self.rect.x + 90, self.rect.y + 10]
+        rel_x, rel_y = self.hero.rect.x - pivot[0], self.hero.rect.y - pivot[1]
+        angle = -int((180 / math.pi) * -math.atan2(rel_y, rel_x))
+
+        if self.attack:
+            pass
+        else:
+            self.current_im += 1
+            if self.current_im >= len(self.animation):
+                self.current_im = 0
+            self.image = self.animation[int(self.current_im)]
+        if dist1 <= 300:
+            self.ready += 1
+        if self.servant == 3 and self.ready >= 50 and dist1 <= 300:
+            self.ram = True
+            self.hx = self.hero.rect.x + 90
+            self.hy = self.hero.rect.y + 10
+            self.point = InvisHero()
+            self.point.rect.x = self.hx
+            self.point.rect.y = self.hy
+            self.ready = -30
+            self.servant = 0
+        if self.ram:
+            if abs(self.hx - self.rect.x - 74) > 0 or abs(self.hy - self.rect.y - 109) > 0:
+                dist = math.hypot(self.hx - self.rect.x, self.hy - self.rect.y)
+                self.rect.x += min(dist, self.speed + 40) * (self.hx - self.rect.x - 74) / dist
+                self.rect.y += min(dist, self.speed + 40) * (self.hy - self.rect.y - 109) / dist
+            if collidePoint(self.rect.x, self.rect.y, self.point) or collide(self.rect.x, self.rect.y, self.hero):
+                self.rect.x += min(dist, self.speed + 40) * (self.hx - self.rect.x - 74) / dist
+                self.rect.y += min(dist, self.speed + 40) * (self.hy - self.rect.y - 109) / dist
+                self.ram = False
+                self.point.kill()
+
+        self.image, rect = rotate(self.image, angle - 100, pivot, offset)
+
+        if self.ready >= 15 and dist1 <= 300:
+            if self.servant < 3:
+                pivot = [self.rect.x + 74, self.rect.y + 109]
+                offset = pygame.math.Vector2(0, 15)
+                self.servant += 1
+                ser = pygame.transform.scale(load_image('eoc_anim/ser_of_ct.png'), (30, 20))
+                ser_img, rect = rotate(ser, angle - 100, pivot, offset)
+                servant = Servant(ser_img, (
+                    int(pivot[0] + offset.rotate(angle - 100)[0] * 3.7),
+                    int(pivot[1] + offset.rotate(angle - 100)[1] * 3.7)),
+                                  angle, 10, 2, self.servants)
+                self.ready = 0
+
+        if self.rect.x != self.hero.rect.x + 30 or self.rect.y != self.hero.rect.y - 300:
+            self.here = False
+
+        if not self.here:
+            if abs(dx) > 0 or abs(dy) > 0:
+                dist = math.hypot(dx, dy)
+                self.rect.x += min(dist, self.speed) * dx / dist
+                self.rect.y += min(dist, self.speed) * dy / dist
+            if self.rect.x == self.hero.rect.x + 30 and self.rect.y == self.hero.rect.y - 300:
+                self.here = True
+
 
 bullets1 = pygame.sprite.Group()
+bullets2 = pygame.sprite.Group()
+bullets3 = pygame.sprite.Group()
+servants1 = pygame.sprite.Group()
+servants2 = pygame.sprite.Group()
+servants3 = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
 
 
 def load_level_1():
-    pygame.mixer.music.load('data/boss1.ogg')
+    pygame.mixer.music.load('data/music/boss1.ogg')
     pygame.mixer.music.play()
-    level = pygame.transform.scale(load_image('level1.png'), size)
+    level = pygame.transform.scale(load_image('levels/level1.png'), size)
     screen.blit(level, (0, 0))
     player = Hero()
     flLeft = flRight = flup = shoot = False
-    boss = Foe(player, 7)
+    boss = Foe(player, 3)
 
     while True:
         for event in pygame.event.get():
@@ -336,18 +518,24 @@ def load_level_1():
             player.is_flying = False
             player.current_im = 0
             if player.left:
-                player.image = pygame.transform.scale(load_image('fly/hero_l.png'), (173, 64))
+                player.image = pygame.transform.scale(load_image('player/hero_l.png'), (173, 64))
             else:
-                player.image = pygame.transform.scale(load_image('fly/hero.png'), (173, 64))
+                player.image = pygame.transform.scale(load_image('player/hero.png'), (173, 64))
             player.fly = 50
         else:
             player.is_flying = True
 
-        screen.blit(level, (0, 0))
+        a = collideServants(player.rect, servants1)
+        if (collide(boss.rect.x, boss.rect.y, player) or a > 0) and player.timer > 15:
+            if collide(boss.rect.x, boss.rect.y, player):
+                player.health -= 25
+            else:
+                player.health -= 10
+            player.timer = 0
+        else:
+            player.timer += 1
 
-        gradientRect_vertical(screen, (141, 175, 254), (173, 103, 255), pygame.Rect(40, 45, 10, 50))
-        pygame.draw.rect(screen, (0, 0, 0), (40, 45, 10, 50 - player.fly))
-        frame = pygame.transform.scale(load_image('frame2.png'), (30, 90))
+        screen.blit(level, (0, 0))
 
         if boss.health > 0:
             gradientRect_horizontal(screen, (255, 172, 93), (139, 0, 0),
@@ -355,16 +543,18 @@ def load_level_1():
             pygame.draw.rect(screen, (0, 0, 0),
                              (boss.rect.x + 74 - 35, boss.rect.y + 109 + 72, int(70 - boss.health), 10))
 
-        gun = pygame.transform.scale(load_image('the_undertaker.png'), (46, 24))
-        gun_l = pygame.transform.scale(load_image('the_undertaker_l.png'), (46, 24))
-        mgun = pygame.transform.scale(load_image('megashark.png'), (70, 28))
-        mgun_l = pygame.transform.scale(load_image('megashark_l.png'), (70, 28))
-        bullet_im = pygame.transform.scale(load_image('bullet.png'), (20, 2))
-        screen.blit(frame, (30, 20))
+        gun = pygame.transform.scale(load_image('player/the_undertaker.png'), (46, 24))
+        gun_l = pygame.transform.scale(load_image('player/the_undertaker_l.png'), (46, 24))
+        mgun = pygame.transform.scale(load_image('player/megashark.png'), (70, 28))
+        mgun_l = pygame.transform.scale(load_image('player/megashark_l.png'), (70, 28))
+        bullet_im = pygame.transform.scale(load_image('player/bullet.png'), (20, 2))
+
         all_sprites.draw(screen)
         all_sprites.update()
         bullets1.draw(screen)
         bullets1.update()
+        servants1.draw(screen)
+        servants1.update()
 
         if player.choice == 1:
             if player.is_flying:
@@ -521,8 +711,23 @@ def load_level_1():
                                 int(pivot[1] + offset.rotate(angle)[1] * 3.7)), angle, 25, 0.6, bullets1)
                     else:
                         screen.blit(mgun, (player.rect.x + 90, player.rect.y + 25))
+
+        gradientRect_vertical(screen, (141, 175, 254), (173, 103, 255), pygame.Rect(40, 45, 10, 50))
+        pygame.draw.rect(screen, (0, 0, 0), (40, 45, 10, 50 - player.fly))
+        frame = pygame.transform.scale(load_image('levels/frame2.png'), (30, 90))
+        screen.blit(frame, (30, 20))
+
+        pygame.draw.rect(screen, (138, 9, 9),
+                         (100, 50, 200, 20))
+        pygame.draw.rect(screen, (0, 0, 0),
+                         (100, 50, int(200 - player.health * 2), 20))
+
         if boss.health <= 0:
             boss.kill()
+            return False
+        if player.health <= 0:
+            return True
+
         player.gun_is_ready += 1
         player.mgun_is_ready += 1
         clock.tick(15)
@@ -531,9 +736,9 @@ def load_level_1():
 
 
 def load_level_2():
-    pygame.mixer.music.load('data/boss2.ogg')
+    pygame.mixer.music.load('data/music/boss2.ogg')
     pygame.mixer.music.play()
-    level = pygame.transform.scale(load_image('level2.png'), size)
+    level = pygame.transform.scale(load_image('levels/level2.png'), size)
     screen.blit(level, (0, 0))
     player = Hero()
     flLeft = flRight = flup = False
@@ -574,59 +779,7 @@ def load_level_2():
         screen.blit(level, (0, 0))
         gradientRect_horizontal(screen, (141, 175, 254), (173, 103, 255), pygame.Rect(40, 45, 10, 50))
         pygame.draw.rect(screen, (0, 0, 0), (40, 45, 10, 50 - player.fly))
-        frame = pygame.transform.scale(load_image('frame2.png'), (30, 90))
-        screen.blit(frame, (30, 20))
-        all_sprites.draw(screen)
-        all_sprites.update()
-        clock.tick(15)
-        pygame.display.flip()
-
-
-def load_level_3():
-    pygame.mixer.music.load('data/boss3.mp3')
-    pygame.mixer.music.play()
-    level = pygame.transform.scale(load_image('level3.png'), size)
-    screen.blit(level, (0, 0))
-    player = Hero()
-    flLeft = flRight = flup = False
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                terminate()
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    flup = True
-                elif event.key == pygame.K_a:
-                    flLeft = True
-                elif event.key == pygame.K_d:
-                    flRight = True
-            elif event.type == pygame.KEYUP:
-                if event.key in [pygame.K_a, pygame.K_d]:
-                    flLeft = flRight = False
-                if event.key == pygame.K_SPACE:
-                    flup = False
-        if flLeft:
-            player.rect.x -= 10
-        elif flRight:
-            player.rect.x += 10
-        if flup and player.fly > 0:
-            player.rect.y -= 10
-            player.fly -= 1
-        elif flup and player.rect.y < 550 and player.fly == 0:
-            player.rect.y += 5
-        elif not flup and player.rect.y < 550 or player.fly == 0:
-            if player.rect.y + 10 < 550:
-                player.rect.y += 10
-            else:
-                player.rect.y += 550 - player.rect.y
-
-        if player.rect.y == 550:
-            player.fly = 50
-
-        screen.blit(level, (0, 0))
-        gradientRect_horizontal(screen, (141, 175, 254), (173, 103, 255), pygame.Rect(40, 45, 10, 50))
-        pygame.draw.rect(screen, (0, 0, 0), (40, 45, 10, 50 - player.fly))
-        frame = pygame.transform.scale(load_image('frame2.png'), (30, 90))
+        frame = pygame.transform.scale(load_image('levels/frame2.png'), (30, 90))
         screen.blit(frame, (30, 20))
         all_sprites.draw(screen)
         all_sprites.update()
@@ -635,11 +788,11 @@ def load_level_3():
 
 
 def start_screen():
-    play = pygame.transform.scale(load_image('play.png'), (300, 100))
-    fon = pygame.transform.scale(load_image('fon.jpg'), (size))
+    play = pygame.transform.scale(load_image('levels/play.png'), (300, 100))
+    fon = pygame.transform.scale(load_image('levels/fon.jpg'), (size))
     screen.blit(fon, (0, 0))
     screen.blit(play, (440, 300))
-    pygame.mixer.music.load('data/title.ogg')
+    pygame.mixer.music.load('data/music/title.ogg')
     pygame.mixer.music.play()
 
     while True:
@@ -654,15 +807,13 @@ def start_screen():
 
 
 def level_menu_screen():
-    easy = pygame.transform.scale(load_image('easy.png'), (150, 150))
-    medium = pygame.transform.scale(load_image('medium.png'), (150, 150))
-    hard = pygame.transform.scale(load_image('hard.png'), (150, 150))
-    fon = pygame.transform.scale(load_image('fon.jpg'), (size))
-    back = pygame.transform.scale(load_image('back.png'), (120, 60))
+    easy = pygame.transform.scale(load_image('levels/easy.png'), (150, 150))
+    medium = pygame.transform.scale(load_image('levels/medium.png'), (150, 150))
+    fon = pygame.transform.scale(load_image('levels/fon.jpg'), (size))
+    back = pygame.transform.scale(load_image('levels/back.png'), (120, 60))
     screen.blit(fon, (0, 0))
-    screen.blit(easy, (300, 300))
-    screen.blit(medium, (525, 300))
-    screen.blit(hard, (750, 300))
+    screen.blit(easy, (400, 300))
+    screen.blit(medium, (625, 300))
     screen.blit(back, (0, 0))
 
     while True:
@@ -671,15 +822,12 @@ def level_menu_screen():
                 terminate()
             elif event.type == pygame.KEYDOWN or \
                     event.type == pygame.MOUSEBUTTONDOWN:
-                if 300 < pygame.mouse.get_pos()[0] < 450 and 300 < pygame.mouse.get_pos()[1] < 450:
+                if 400 < pygame.mouse.get_pos()[0] < 550 and 300 < pygame.mouse.get_pos()[1] < 450:
                     pygame.mixer.music.stop()
                     load_level_1()
-                elif 525 < pygame.mouse.get_pos()[0] < 675 and 300 < pygame.mouse.get_pos()[1] < 450:
+                elif 625 < pygame.mouse.get_pos()[0] < 775 and 300 < pygame.mouse.get_pos()[1] < 450:
                     pygame.mixer.music.stop()
                     load_level_2()
-                elif 750 < pygame.mouse.get_pos()[0] < 900 and 300 < pygame.mouse.get_pos()[1] < 450:
-                    pygame.mixer.music.stop()
-                    load_level_3()
                 elif 0 < pygame.mouse.get_pos()[0] < 120 and 0 < pygame.mouse.get_pos()[1] < 60:
                     start_screen()
         pygame.display.flip()
