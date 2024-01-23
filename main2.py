@@ -9,6 +9,10 @@ size = width, height = 1200, 700
 screen = pygame.display.set_mode(size)
 FPS = 100
 clock = pygame.time.Clock()
+with open('score.txt', 'w') as fil:
+    fil.write('0')
+with open('all_score.txt', 'w') as file:
+    file.write('all score: 0')
 
 
 def collideBullets(foe, bullets):
@@ -464,14 +468,14 @@ servants3 = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
 
 
-def load_level_1():
+def load_level_1(sc):
     pygame.mixer.music.load('data/music/boss1.ogg')
     pygame.mixer.music.play()
     level = pygame.transform.scale(load_image('levels/level1.png'), size)
     screen.blit(level, (0, 0))
     player = Hero()
     flLeft = flRight = flup = shoot = False
-    boss = Foe(player, 3, servants1)
+    boss = Foe(player, 7, servants1)
 
     while True:
         for event in pygame.event.get():
@@ -501,17 +505,17 @@ def load_level_1():
             elif event.type == pygame.MOUSEBUTTONUP:
                 shoot = False
         if flLeft and player.rect.x >= -50:
-            player.rect.x -= 10
+            player.rect.x -= 13
         elif flRight and player.rect.x <= 1080:
-            player.rect.x += 10
+            player.rect.x += 13
         if flup and player.fly > 0:
-            player.rect.y -= 10
+            player.rect.y -= 13
             player.fly -= 0.8
         elif flup and player.rect.y < 635 and player.fly <= 0:
             player.rect.y += 5
         elif not flup and player.rect.y < 635 or player.fly <= 0:
-            if player.rect.y + 10 < 635:
-                player.rect.y += 10
+            if player.rect.y + 13 < 635:
+                player.rect.y += 13
             else:
                 player.rect.y += 635 - player.rect.y
 
@@ -529,9 +533,11 @@ def load_level_1():
         a = collideServants(player.rect, servants1)
         if (collide(boss.rect.x, boss.rect.y, player) or a > 0) and player.timer > 15:
             if collide(boss.rect.x, boss.rect.y, player):
-                player.health -= 25
+                player.health -= 20
+                sc -= 200
             else:
                 player.health -= 10
+                sc -= 100
             player.timer = 0
         else:
             player.timer += 1
@@ -725,8 +731,32 @@ def load_level_1():
 
         if boss.health <= 0:
             boss.kill()
+            player.kill()
+            f = open('all_score.txt', 'r')
+            s = int(f.readline().split()[2])
+            with open('all_score.txt', 'w') as file:
+                file.write(f'all score: {sc + s}')
+            with open('score.txt', 'w') as fil:
+                fil.write('')
+                fil.write(str(sc))
+
+            all_sprites.empty()
+            all_sprites.update()
+            bullets1.empty()
+            bullets1.update()
+            servants1.empty()
+            servants1.update()
             return True
         if player.health <= 0:
+            boss.kill()
+            player.kill()
+
+            all_sprites.empty()
+            all_sprites.update()
+            bullets1.empty()
+            bullets1.update()
+            servants1.empty()
+            servants1.update()
             return False
 
         player.gun_is_ready += 1
@@ -736,7 +766,7 @@ def load_level_1():
         pygame.display.flip()
 
 
-def load_level_2():
+def load_level_2(sc):
     pygame.mixer.music.load('data/music/boss2.ogg')
     pygame.mixer.music.play()
     level = pygame.transform.scale(load_image('levels/level2.png'), size)
@@ -805,8 +835,10 @@ def load_level_2():
                                                                    player) or a > 0) and player.timer > 15:
             if collide(boss1.rect.x, boss1.rect.y, player) or collide(boss2.rect.x, boss2.rect.y, player):
                 player.health -= 25
+                sc -= 250
             else:
                 player.health -= 10
+                sc -= 100
             player.timer = 0
         else:
             player.timer += 1
@@ -1012,8 +1044,31 @@ def load_level_2():
             player.kill()
             boss1.kill()
             boss2.kill()
+            f = open('all_score.txt', 'r')
+            s = int(f.readline().split()[2])
+            with open('all_score.txt', 'w') as file:
+                file.write(f'all score: {sc + s}')
+            with open('score.txt', 'w') as file:
+                file.write(str(sc))
+
+            all_sprites.empty()
+            all_sprites.update()
+            bullets2.empty()
+            bullets2.update()
+            servants2.empty()
+            servants2.update()
             return True
         if player.health <= 0:
+            boss1.kill()
+            boss2.kill()
+            player.kill()
+
+            all_sprites.empty()
+            all_sprites.update()
+            bullets2.empty()
+            bullets2.update()
+            servants2.empty()
+            servants2.update()
             return False
 
         player.gun_is_ready += 1
@@ -1046,9 +1101,20 @@ def start_screen():
 def win_screen():
     im = pygame.transform.scale(load_image('levels/win.png'), (size))
     screen.blit(im, (0, 0))
-    pygame.display.flip()
     pygame.mixer.music.load('data/music/yippee-tbh.mp3')
     pygame.mixer.music.play()
+    with open('score.txt', 'r') as f:
+        line = f.readline()
+        font = pygame.font.Font(None, 70)
+        text_coord = 590
+        string_rendered = font.render(line, 1, pygame.Color('black'))
+        intro_rect = string_rendered.get_rect()
+        text_coord += 10
+        intro_rect.top = text_coord
+        intro_rect.x = 600
+        text_coord += intro_rect.height
+        screen.blit(string_rendered, intro_rect)
+    pygame.display.flip()
     t = pygame.time.get_ticks()
     while True:
         if pygame.time.get_ticks() - t >= 5000:
@@ -1087,14 +1153,14 @@ def level_menu_screen():
                     event.type == pygame.MOUSEBUTTONDOWN:
                 if 400 < pygame.mouse.get_pos()[0] < 550 and 300 < pygame.mouse.get_pos()[1] < 450:
                     pygame.mixer.music.stop()
-                    l1 = load_level_1()
+                    l1 = load_level_1(1000)
                     if l1:
                         win_screen()
                     else:
                         lose_screen()
                 elif 625 < pygame.mouse.get_pos()[0] < 775 and 300 < pygame.mouse.get_pos()[1] < 450:
                     pygame.mixer.music.stop()
-                    l2 = load_level_2()
+                    l2 = load_level_2(1000)
                     if l2:
                         win_screen()
                     else:
