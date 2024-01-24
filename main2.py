@@ -526,7 +526,7 @@ def load_level_1(sc):
                 player.image = pygame.transform.scale(load_image('player/hero_l.png'), (173, 64))
             else:
                 player.image = pygame.transform.scale(load_image('player/hero.png'), (173, 64))
-            player.fly = 50
+            player.fly = 40
         else:
             player.is_flying = True
 
