@@ -15,7 +15,7 @@ with open('all_score.txt', 'w') as file:
     file.write('all score: 0')
 
 
-def collideBullets(foe, bullets):
+def collideBullets(foe, bullets):  # коллизия пуль и босса
     center = (foe.rect.x + 74, foe.rect.y + 109)
     for bullet in bullets:
         if center[0] - 52 <= bullet.rect.x <= center[0] + 52 and center[1] - 52 <= bullet.rect.y <= center[1] + 52:
@@ -23,7 +23,7 @@ def collideBullets(foe, bullets):
             bullet.kill()
 
 
-def collideServants(hero_rect, servants):
+def collideServants(hero_rect, servants):  # коллизия прислужников и игрока
     damage = 0
     for servant in servants:
         center = servant.rect.center
@@ -33,21 +33,21 @@ def collideServants(hero_rect, servants):
     return damage
 
 
-def collide(rect_x, rect_y, hero):
+def collide(rect_x, rect_y, hero):  # коллизия игрока и босса
     center = (rect_x + 74, rect_y + 109)
     if center[0] - 52 <= hero.rect.x + 90 <= center[0] + 52 and center[1] - 52 <= hero.rect.y <= center[1] + 52:
         return True
     return False
 
 
-def collidePoint(rect_x, rect_y, hero):
+def collidePoint(rect_x, rect_y, hero):  # коллизия вспомогательной точки и босса
     center = (rect_x + 74, rect_y + 109)
     if center[0] - 52 <= hero.rect.x <= center[0] + 52 and center[1] - 52 <= hero.rect.y <= center[1] + 52:
         return True
     return False
 
 
-def gradientRect_vertical(window, left_colour, right_colour, target_rect):
+def gradientRect_vertical(window, left_colour, right_colour, target_rect):  # полоска индикатора полёта
     colour_rect = pygame.Surface((2, 2))
     pygame.draw.line(colour_rect, left_colour, (0, 0), (1, 0))
     pygame.draw.line(colour_rect, right_colour, (0, 1), (1, 1))
@@ -55,7 +55,7 @@ def gradientRect_vertical(window, left_colour, right_colour, target_rect):
     window.blit(colour_rect, target_rect)
 
 
-def gradientRect_horizontal(window, left_colour, right_colour, target_rect):
+def gradientRect_horizontal(window, left_colour, right_colour, target_rect):  # полоска здоровья
     colour_rect = pygame.Surface((2, 2))
     pygame.draw.line(colour_rect, left_colour, (0, 0), (0, 1))
     pygame.draw.line(colour_rect, right_colour, (1, 0), (1, 1))
@@ -63,7 +63,7 @@ def gradientRect_horizontal(window, left_colour, right_colour, target_rect):
     window.blit(colour_rect, target_rect)
 
 
-def load_image(name):
+def load_image(name):  # загрузка изображения
     fullname = os.path.join('data', name)
     # если файл не существует, то выходим
     if not os.path.isfile(fullname):
@@ -73,15 +73,7 @@ def load_image(name):
     return image
 
 
-def rotate(surface, angle, pivot, offset):
-    """Rotate the surface around the pivot point.
-
-    Args:
-        surface (pygame.Surface): The surface that is to be rotated.
-        angle (float): Rotate by this angle.
-        pivot (tuple, list, pygame.math.Vector2): The pivot point.
-        offset (pygame.math.Vector2): This vector is added to the pivot.
-    """
+def rotate(surface, angle, pivot, offset):  # поворот изображения
     rotated_image = pygame.transform.rotozoom(surface, -angle, 1)  # Rotate the image.
     rotated_offset = offset.rotate(angle)  # Rotate the offset vector.
     # Add the offset vector to the center/pivot point to shift the rect.
@@ -89,18 +81,18 @@ def rotate(surface, angle, pivot, offset):
     return rotated_image, rect  # Return the rotated image and shifted rect.
 
 
-def terminate():
+def terminate():  # выход
     pygame.quit()
     sys.exit()
 
 
-def calculate_new_xy(old_xy, speed, angle_in_radians):
+def calculate_new_xy(old_xy, speed, angle_in_radians):  # вычисление координат объекта
     new_x = old_xy[0] + (speed * math.cos(angle_in_radians))
     new_y = old_xy[1] + (speed * math.sin(angle_in_radians))
     return new_x, new_y
 
 
-class Bullet(pygame.sprite.Sprite):
+class Bullet(pygame.sprite.Sprite):  # пуля
     def __init__(self, image, coords, direction, speed, damage, group):
         super().__init__(group)
         self.image = image
@@ -114,7 +106,7 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.center = calculate_new_xy(self.rect.center, self.speed, self.direction)
 
 
-class Servant(pygame.sprite.Sprite):
+class Servant(pygame.sprite.Sprite):  # класс прислужника
     def __init__(self, image, coords, direction, speed, damage, group):
         super().__init__(group)
         self.image = image
@@ -128,7 +120,7 @@ class Servant(pygame.sprite.Sprite):
         self.rect.center = calculate_new_xy(self.rect.center, self.speed, self.direction)
 
 
-class Hero(pygame.sprite.Sprite):
+class Hero(pygame.sprite.Sprite):  # класс героя
     def __init__(self):
         super().__init__(all_sprites)
         self.fly_animation = []
@@ -171,7 +163,7 @@ class Hero(pygame.sprite.Sprite):
                 self.image = pygame.transform.scale(load_image('player/hero.png'), (173, 64))
 
 
-class InvisHero(pygame.sprite.Sprite):
+class InvisHero(pygame.sprite.Sprite):  # вспомогательная точка
     def __init__(self):
         super().__init__(all_sprites)
         self.image = pygame.transform.scale(load_image('player/hero.png'), (1, 1))
@@ -180,7 +172,7 @@ class InvisHero(pygame.sprite.Sprite):
         self.fly = 50
 
 
-class Foe(pygame.sprite.Sprite):
+class Foe(pygame.sprite.Sprite):  # класс босса 1ого уровня
     def __init__(self, hero, speed, servants):
         super().__init__(all_sprites)
         self.animation = []
@@ -271,7 +263,7 @@ class Foe(pygame.sprite.Sprite):
                 self.here = True
 
 
-class TwinsRet(pygame.sprite.Sprite):
+class TwinsRet(pygame.sprite.Sprite):  # класс 1ого босса 2ого уровня
     def __init__(self, hero, speed, servants):
         super().__init__(all_sprites)
         self.animation = []
@@ -365,7 +357,7 @@ class TwinsRet(pygame.sprite.Sprite):
                 self.here = True
 
 
-class TwinsSpaz(pygame.sprite.Sprite):
+class TwinsSpaz(pygame.sprite.Sprite):  # класс 2ого босса 2ого уровня
     def __init__(self, hero, speed, servants):
         super().__init__(all_sprites)
         self.animation = []
@@ -468,7 +460,7 @@ servants3 = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
 
 
-def load_level_1(sc):
+def load_level_1(sc):  # 1ый уровень
     pygame.mixer.music.load('data/music/boss1.ogg')
     pygame.mixer.music.play()
     level = pygame.transform.scale(load_image('levels/level1.png'), size)
@@ -766,7 +758,7 @@ def load_level_1(sc):
         pygame.display.flip()
 
 
-def load_level_2(sc):
+def load_level_2(sc):  # 2ой уровень
     pygame.mixer.music.load('data/music/boss2.ogg')
     pygame.mixer.music.play()
     level = pygame.transform.scale(load_image('levels/level2.png'), size)
@@ -1079,7 +1071,7 @@ def load_level_2(sc):
         pygame.display.flip()
 
 
-def start_screen():
+def start_screen():  # титульный экран
     play = pygame.transform.scale(load_image('levels/play.png'), (300, 100))
     fon = pygame.transform.scale(load_image('levels/fon.jpg'), (size))
     screen.blit(fon, (0, 0))
@@ -1098,7 +1090,7 @@ def start_screen():
         pygame.display.flip()
 
 
-def win_screen():
+def win_screen():  # экран победы
     im = pygame.transform.scale(load_image('levels/win.png'), (size))
     screen.blit(im, (0, 0))
     pygame.mixer.music.load('data/music/yippee-tbh.mp3')
@@ -1122,7 +1114,7 @@ def win_screen():
             return
 
 
-def lose_screen():
+def lose_screen():  # экран поражения
     im = pygame.transform.scale(load_image('levels/lose.png'), (size))
     screen.blit(im, (0, 0))
     pygame.display.flip()
@@ -1135,7 +1127,7 @@ def lose_screen():
             return
 
 
-def level_menu_screen():
+def level_menu_screen():  # меню уровней
     easy = pygame.transform.scale(load_image('levels/easy.png'), (150, 150))
     medium = pygame.transform.scale(load_image('levels/medium.png'), (150, 150))
     fon = pygame.transform.scale(load_image('levels/fon.jpg'), (size))
